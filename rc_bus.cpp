@@ -34,8 +34,8 @@ bool rc_bus::open_port(QString desport, QString nameport)
             if (nameport!=NULL) serial->setPortName(nameport);
             if (serial->open(QIODevice::ReadWrite)){
                 QSerialPortInfo info(serial->portName());
-                if (!serial->setBaudRate(115200)) {
-                    qDebug() << "Set baud rate " <<  115200 << " error.";
+                if (!serial->setBaudRate(250000)) {
+                    qDebug() << "Set baud rate " <<  250000 << " error.";
 
                 };
 
