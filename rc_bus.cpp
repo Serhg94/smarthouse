@@ -10,6 +10,9 @@ rc_bus::rc_bus(QObject *parent) :
     QObject::connect(this->serial, SIGNAL(readyRead()), this, SLOT(readAllData()));
     QObject::connect(this, SIGNAL(gettedString(QString)), this, SLOT(parseDataStr(QString)));
     open_port("Arduino Mega 2560", NULL);
+    send_timer = new QTimer(this);
+    QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
+    send_timer->start(SEND_DELAY_MSEC);
 }
 
 
@@ -96,16 +99,29 @@ void rc_bus::init()
 
 void rc_bus::sendCommand(int sn, QString string)
 {
-    QString s;  s = QString("0%1set%2") .arg(sn) .arg(string);
-    s[s.length()] = '\n';
-    serial->write(s.toLatin1());
+    QString s = QString("0%1set%2") .arg(sn) .arg(string);
+    send_buff.append(s);
+    //s[s.length()] = '\n';
+    //serial->write(s.toLatin1());
 }
 
 
 void rc_bus::sendStr(QString string)
 {
+    send_buff.append(string);
+    //string[string.length()] = '\n';
+    //serial->write(string.toLatin1());
+    //qDebug()<<string.toLatin1();
+    //emit sendedString(string);
+}
+
+void rc_bus::send()
+{
+    if (send_buff.size()<1) return;
+    QString string = send_buff.first();
     string[string.length()] = '\n';
     serial->write(string.toLatin1());
+    send_buff.pop_front();
     emit sendedString(string);
 }
 

@@ -157,9 +157,11 @@ void MainWindow::update()
     ui->listWidget->item(3)->setText("4 - OFFLINE");
     ui->listWidget->item(4)->setText("5 - OFFLINE");
     ui->listWidget->item(5)->setText("6 - OFFLINE");
-    QString a("clr");
-    a[a.length()]='\n';
-    bus->serial->write(a.toLatin1());
+
+    bus->sendStr("clr");
+    //QString a("clr");
+    //a[a.length()]='\n';
+    //bus->serial->write(a.toLatin1());
 }
 
 
@@ -392,7 +394,8 @@ void MainWindow::processPendingDatagrams()
         }
         else
         //qDebug()<<datagram.data();
-            bus->serial->write(data.toLatin1());
+            bus->sendStr(data);
+            //bus->serial->write(data.toLatin1());
     }
 }
 

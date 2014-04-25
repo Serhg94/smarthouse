@@ -3,9 +3,12 @@
 
 #include <QtCore/QDebug>
 #include <QObject>
+#include <QVector>
+#include <QTimer>
 #include <QtSerialPort/QSerialPort>
-#include <QtSerialPort/QSerialPortInfo>\
+#include <QtSerialPort/QSerialPortInfo>
 
+#define SEND_DELAY_MSEC 10
 
 class rc_bus : public QObject
 {
@@ -41,9 +44,12 @@ public slots:
 private slots:
     void parseDataStr(QString string);
     void readAllData();
+    void send();
 
 private:
     QString *buffer = NULL;
+    QTimer *send_timer; //таймер между отправлениями команд из буфера
+    QVector<QString> send_buff;
 };
 
 #endif // RC_BUS_H
