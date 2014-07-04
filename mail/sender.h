@@ -21,22 +21,29 @@ public:
 
     void run ()
     {
-        //Код, исполняемый в потоке
-        SmtpClient smtp(server);
-        //smtp.setUser("123@127.0.0.1");
-       // smtp.setPassword("123");
-        MimeMessage message;
-        message.setSender(new EmailAddress(from, ""));
-        message.addRecipient(new EmailAddress(to, ""));
-        message.setSubject(subject);
-        MimeText text;
-        text.setText(body);
-        message.addPart(&text);
-        smtp.connectToHost();
-        smtp.login();
-        smtp.sendMail(message);
-        smtp.quit();
-        //this->deleteLater();
+        try
+        {
+            //Код, исполняемый в потоке
+            SmtpClient smtp(server);
+            //smtp.setUser("123@127.0.0.1");
+           // smtp.setPassword("123");
+            MimeMessage message;
+            message.setSender(new EmailAddress(from, ""));
+            message.addRecipient(new EmailAddress(to, ""));
+            message.setSubject(subject);
+            MimeText text;
+            text.setText(body);
+            message.addPart(&text);
+            smtp.connectToHost();
+            smtp.login();
+            smtp.sendMail(message);
+            smtp.quit();
+            //this->deleteLater();
+        }
+        catch(...)
+        {
+            qDebug()<<QTime::currentTime().toString()+" Ошибка отправки e-mail";
+        }
     }
 
 };

@@ -3,6 +3,7 @@
 pinCondition::pinCondition(QObject *parent) :
     Condition(parent)
 {
+    oldState = -1;
 }
 
 int pinCondition::pinState(rc_bus *bus)

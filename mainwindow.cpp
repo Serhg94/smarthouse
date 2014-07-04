@@ -33,6 +33,7 @@ MainWindow::MainWindow(QApplication *a, QWidget *parent) :
     za_enable = false;
     info_enable = false;
     doorlight_enable = false;
+    door_status = -1;
 
     termo = new web_termometr();
 

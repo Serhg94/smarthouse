@@ -1,25 +1,35 @@
 #include "linkmaker.h"
+#include <QMessageBox>
 
 Linktimer* makeLinksFromFile(QString name, rc_bus *bus, audiosteck *player, web_termometr *termo)
 {
-    QFile file(name);
-    Linktimer *lt = new Linktimer(bus);
-    if (!file.open(QIODevice::ReadOnly)) // Проверяем, возможно ли открыть наш файл для чтения
-        return lt; // если это сделать невозможно, то завершаем функцию
-    char buf[2048];
-    qint64 lineLength = file.readLine(buf, sizeof(buf));
-    while(lineLength != -1)
+    try
     {
-        QString str(buf);
-        if (!str.contains("//"))
+        QFile file(name);
+        Linktimer *lt = new Linktimer(bus);
+        if (!file.open(QIODevice::ReadOnly)) // Проверяем, возможно ли открыть наш файл для чтения
+            return lt; // если это сделать невозможно, то завершаем функцию
+        char buf[2048];
+        qint64 lineLength = file.readLine(buf, sizeof(buf));
+        while(lineLength != -1)
         {
-            str = str.replace(" ", "");
-            lt->links.append(parseLink(str, bus, player, termo));
-            //qDebug() << str;
+            QString str(buf);
+            if (!str.contains("//"))
+            {
+                str = str.replace(" ", "");
+                lt->links.append(parseLink(str, bus, player, termo));
+                //qDebug() << str;
+            }
+            lineLength = file.readLine(buf, sizeof(buf));
         }
-        lineLength = file.readLine(buf, sizeof(buf));
+        qDebug()<<QTime::currentTime().toString()+" Скрипты загружены";
+        return lt;
     }
-    return lt;
+    catch(...)
+    {
+        qDebug()<<QTime::currentTime().toString()+" Ошибка разбора файла скриптов";
+        QMessageBox::critical(NULL,QObject::tr("Ошибка"),QObject::tr("Ошибка разбора файла скриптов!"));
+    }
 }
 
 Link* parseLink(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo)
@@ -30,6 +40,8 @@ Link* parseLink(QString str, rc_bus *bus, audiosteck *player, web_termometr *ter
     int timeout = str.mid(str.lastIndexOf("timeout=")+8).toInt(&ok);
     if (str.mid(str.indexOf(";")).contains("doafter", Qt::CaseInsensitive))
         lk->setDoAfter();
+    if (str.mid(str.indexOf(";")).contains("oncecheck", Qt::CaseInsensitive))
+        lk->setDoAfterOnceCheck();
     if (ok) lk->timeout = timeout; else return lk;
     lk->action = parseAction(str.mid(str.indexOf("then")+4, str.indexOf(";")-str.indexOf("then")-4), bus, player, termo);
     lk->event = parseEvent(str.mid(str.indexOf("if")+2, str.indexOf("then")-str.indexOf("if")-2), bus, player, termo);

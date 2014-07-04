@@ -14,14 +14,17 @@ public:
     explicit Link(QObject *parent = 0);
     Event *event;
     Action *action;
-    bool enabled = true;
-    bool do_after = false;
+    bool enabled;
+    bool do_after;
+    bool once_check;
     int timeout;
     void checkLink(rc_bus *bus);
     void setDoAfter();
+    void setDoAfterOnceCheck();
 
 private:
-    bool doing = false;
+    bool doing;
+    QTimer *do_after_timer;
 
 signals:
 

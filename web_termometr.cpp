@@ -23,12 +23,12 @@ void web_termometr::recive_temp()
 {
     page->close();
     temper = page->readAll().toInt();
-    qDebug() << temper;
+    //qDebug() << temper;
 }
 
 void web_termometr::recive_temp(int t)
 {
     page->close();
     temper = t;
-    qDebug() << temper;
+    //qDebug() << temper;
 }

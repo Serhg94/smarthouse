@@ -36,7 +36,7 @@ public:
     bool doorlight_enable;
 
     //логическое состояние двери
-    int door_status = -1;
+    int door_status;
 
     Linktimer *linkengine;
     QApplication *app;

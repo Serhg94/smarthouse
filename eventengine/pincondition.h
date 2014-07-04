@@ -20,7 +20,7 @@ public:
     short int pintype;
 
     short int pin;
-    short int oldState = -1;
+    short int oldState;
     short int mk;
     // 1 - выполняется, 0 - не выполняется, 6 - что то пошло не так.
     int checkCondition(rc_bus *bus);

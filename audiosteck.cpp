@@ -22,11 +22,18 @@ void audiosteck::run()
 
 void audiosteck::update()
 {
-    if ((!playlist.isEmpty())&&(player->state()==QMediaPlayer::StoppedState))
+    try
     {
-        player->setMedia(QUrl::fromLocalFile(playlist.first()));
-        player->play();
-        playlist.removeFirst();
+        if ((!playlist.isEmpty())&&(player->state()==QMediaPlayer::StoppedState))
+        {
+            player->setMedia(QUrl::fromLocalFile(playlist.first()));
+            player->play();
+            playlist.removeFirst();
+        }
+    }
+    catch(...)
+    {
+        qDebug() << QTime::currentTime().toString()+" Can't play file";
     }
 }
 
