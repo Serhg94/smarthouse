@@ -9,8 +9,8 @@
 #define MCT_MSEC 300
 #define MAINTAIN_MSEC 30000
 #define UPT_MSEC 5000
-#define PORT_SEND 6666
-#define PORT_LISTEN 6667
+#define PORT_SEND 6668
+#define PORT_LISTEN 6669
 #define DOOR_ALARM_SEC 300
 #define ZAMOK_ALARM_SEC 300
 #define SAY_INFO_SEC 1800
@@ -24,8 +24,8 @@ MainWindow::MainWindow(QApplication *a, QWidget *parent) :
     ui->setupUi(this);
 
     app = a;
-    //6666 - в него сервер отправляет
-    //6667 - его сервер слушает
+    //6668 - в него сервер отправляет
+    //6669 - его сервер слушает
     udpSocket = new QUdpSocket(this);
     udpSocket->bind(PORT_LISTEN, QUdpSocket::ShareAddress);
 
@@ -42,7 +42,7 @@ MainWindow::MainWindow(QApplication *a, QWidget *parent) :
     player = new audiosteck();
     player->start();
 
-    bus = new rc_bus();
+    bus = new rc_bus(this, true);
     budil = new alarmDialog(this);
 
     QObject::connect(ui->alarmButton, SIGNAL(clicked()), this->budil, SLOT(show()));
@@ -51,7 +51,7 @@ MainWindow::MainWindow(QApplication *a, QWidget *parent) :
     QObject::connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
     QObject::connect(this->bus, SIGNAL(gettedString(QString)), ui->textBrowser, SLOT(append(QString)));
     QObject::connect(this->bus, SIGNAL(sendedString(QString)), ui->textBrowser, SLOT(append(QString)));
-    QObject::connect(this->bus, SIGNAL(gettedString(QString)), this, SLOT(broadcastDatagram(QString)));
+    QObject::connect(this->bus, SIGNAL(gettedString(QString)), this, SLOT(sendDatagram(QString)));
     QObject::connect(ui->pushButton, SIGNAL(clicked()), this->bus, SLOT(reopen()));
     QObject::connect(this->bus, SIGNAL(statsChanged(int)), this, SLOT(RefreshView(int)));
 
@@ -283,6 +283,8 @@ void MainWindow::maintain()
     if (!exist_online())
     {
         bus->reopen();
+        if (online)
+            qDebug()<<QDate::currentDate().toString()+" "+QTime::currentTime().toString()+" Ошибка отправки команды в шину";
     }
     if (da_enable)
     {
@@ -310,7 +312,7 @@ void MainWindow::maintain()
 
     QString s;  s = QString("temp%1;")
             .arg(termo->temper);
-    broadcastDatagram(s);
+    sendDatagram(s);
 
     //restart
     if ((cur.minute() == ui->restarttime->time().minute())&&(cur.hour() == ui->restarttime->time().hour())&&(ui->restartbox->isChecked()))
@@ -376,7 +378,7 @@ void MainWindow::processPendingDatagrams()
                     .arg((int)ui->dooralertBox->isChecked())
                     .arg((int)ui->lockalertBox->isChecked())
                     .arg((int)ui->doorlightBox->isChecked());
-            broadcastDatagram(s);
+            sendDatagram(s);
         }
         else
         // установка присланных состояний галок
@@ -401,11 +403,13 @@ void MainWindow::processPendingDatagrams()
 }
 
 
-void MainWindow::broadcastDatagram(QString str)
+void MainWindow::sendDatagram(QString str)
 {
     QByteArray datagram = str.toLatin1();
     udpSocket->writeDatagram(datagram.data(), datagram.size(),
-                             QHostAddress::Broadcast, PORT_SEND);
+                                QHostAddress("127.0.0.1"), PORT_SEND);
+    //udpSocket->writeDatagram(datagram.data(), datagram.size(),
+   //                         QHostAddress::Broadcast, PORT_SEND);
 }
 
 

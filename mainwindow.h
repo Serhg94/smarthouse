@@ -63,7 +63,7 @@ public slots:
     void speakTerm(int t);
     void bud_action(int num);
     void processPendingDatagrams();
-    void broadcastDatagram(QString str);
+    void sendDatagram(QString str);
     void main_control();
     void maintain();
 

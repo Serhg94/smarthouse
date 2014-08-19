@@ -5,10 +5,13 @@
 #include <QObject>
 #include <QVector>
 #include <QTimer>
+#include <QUdpSocket>
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 
 #define SEND_DELAY_MSEC 10
+#define PORT_SEND1 6667
+#define PORT_LISTEN1 6666
 
 class rc_bus : public QObject
 {
@@ -20,8 +23,9 @@ public:
     QString butt[10];
     QString rebs[10];
     QString portstr;
+    QHostAddress ip;
 
-    explicit rc_bus(QObject *parent = 0);
+    explicit rc_bus(QObject *parent = 0, bool n = false);
     int checkString(QString string, int from);
     void sendCommand(int sn, QString string);
     void sendStr(QString string);
@@ -44,10 +48,13 @@ public slots:
 private slots:
     void parseDataStr(QString string);
     void readAllData();
+    void processPendingDatagrams();
     void send();
 
 private:
+    bool net;
     QString *buffer = NULL;
+    QUdpSocket *udpSocket;
     QTimer *send_timer; //таймер между отправлениями команд из буфера
     QVector<QString> send_buff;
 };

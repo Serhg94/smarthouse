@@ -2,37 +2,56 @@
 #include <QTime>
 #include "rc_bus.h"
 
-rc_bus::rc_bus(QObject *parent) :
+rc_bus::rc_bus(QObject *parent, bool n) :
     QObject(parent)
 {
-    try
+    net = n;
+    if (net)
     {
-        init();
-        serial = new QSerialPort();
-        QObject::connect(this->serial, SIGNAL(readyRead()), this, SLOT(readAllData()));
+        udpSocket = new QUdpSocket(this);
+        udpSocket->bind(PORT_LISTEN1, QUdpSocket::ShareAddress);
+        QObject::connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
         QObject::connect(this, SIGNAL(gettedString(QString)), this, SLOT(parseDataStr(QString)));
-        open_port("Arduino Mega 2560", NULL);
         send_timer = new QTimer(this);
+        ip = QHostAddress::Broadcast;
         QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
         send_timer->start(SEND_DELAY_MSEC);
     }
-    catch(...)
+    else
     {
-        qDebug() << QTime::currentTime().toString()+" Port open FAIL!";
-        QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка инициализации шины"));
+        try
+        {
+            init();
+            serial = new QSerialPort();
+            QObject::connect(this->serial, SIGNAL(readyRead()), this, SLOT(readAllData()));
+            QObject::connect(this, SIGNAL(gettedString(QString)), this, SLOT(parseDataStr(QString)));
+            open_port("Arduino Mega 2560", NULL);
+            send_timer = new QTimer(this);
+            QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
+            send_timer->start(SEND_DELAY_MSEC);
+        }
+        catch(...)
+        {
+            qDebug() << QTime::currentTime().toString()+" Port open FAIL!";
+            QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка инициализации шины"));
+        }
     }
 }
 
 
 void rc_bus::reopen()
 {
-    serial->close();
-    open_port(NULL, portstr);
+    if (!net)
+    {
+        serial->close();
+        open_port(NULL, portstr);
+    }
 }
 
 
 bool rc_bus::open_port(QString desport, QString nameport)
 {
+    if (!net)
     try{
         //while(!serial->isOpen())
         {
@@ -45,7 +64,7 @@ bool rc_bus::open_port(QString desport, QString nameport)
             if (nameport!=NULL) serial->setPortName(nameport);
             if (serial->open(QIODevice::ReadWrite)){
                 QSerialPortInfo info(serial->portName());
-                if (!serial->setBaudRate(250000)) {
+                if (!serial->setBaudRate(115200)) {
                     qDebug() << "Set baud rate " <<  250000 << " error.";
 
                 };
@@ -125,19 +144,33 @@ void rc_bus::sendStr(QString string)
 
 void rc_bus::send()
 {
-    try
+    if (!net)
+    {
+        try
+        {
+            if (send_buff.size()<1) return;
+            QString string = send_buff.first();
+            string[string.length()] = '\n';
+            serial->write(string.toLatin1());
+            send_buff.pop_front();
+            emit sendedString(string);
+        }
+        catch(...)
+        {
+            qDebug()<<QDate::currentDate().toString()+" "+QTime::currentTime().toString()+" Ошибка отправки команды в шину";
+            //QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка отправки команды в шину"));
+        }
+    }
+    else
     {
         if (send_buff.size()<1) return;
         QString string = send_buff.first();
         string[string.length()] = '\n';
-        serial->write(string.toLatin1());
+        QByteArray datagram = string.toLatin1();
+        udpSocket->writeDatagram(datagram.data(), datagram.size(),
+                                    ip, PORT_SEND1);
         send_buff.pop_front();
         emit sendedString(string);
-    }
-    catch(...)
-    {
-        qDebug()<<QTime::currentTime().toString()+" Ошибка отправки команды в шину";
-        //QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка отправки команды в шину"));
     }
 }
 
@@ -273,8 +306,21 @@ void rc_bus::readAllData()
 }
 
 
+void rc_bus::processPendingDatagrams()
+{
+    while (udpSocket->hasPendingDatagrams()) {
+        QByteArray datagram;
+        datagram.resize(udpSocket->pendingDatagramSize());
+        udpSocket->readDatagram(datagram.data(), datagram.size(), &ip);
+        QString data = QString(datagram);
+        emit gettedString(data);
+    }
+}
+
+
 rc_bus::~rc_bus()
 {
-    serial->close();
+    if(!net)
+        serial->close();
     qDebug()<<QTime::currentTime().toString()+" Порт закрыт";
 }
