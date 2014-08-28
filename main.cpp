@@ -1,14 +1,17 @@
-#include "mainwindow.h"
 #include <QApplication>
 #include <stdio.h>
 #include <stdlib.h>
 #include <QDebug>
 #include <QtMsgHandler>
 
+#include "mainwindow.h"
+#include "alarmdialog.h"
+#include "controller.h"
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    QByteArray localMsg = msg.toLocal8Bit();
+    QString s = QTime::currentTime().toString()+" "+QDate::currentDate().toString()+" "+msg;
+    QByteArray localMsg = s.toLocal8Bit();
     FILE *file; // указатель на файл, в который пишем
     file = fopen("file.log", "a"); // открываем файл на запись
     switch (type) {
@@ -32,8 +35,19 @@ int main(int argc, char *argv[])
 {
     qInstallMessageHandler(myMessageOutput);
     QApplication a(argc, argv);
-    MainWindow w(&a);
-    w.show();
-
+    alarmDialog budil;
+    QThread controlThread;
+    controller control;
+    control.moveToThread(&controlThread);
+    controlThread.start();
+    QObject::connect(&controlThread, SIGNAL(started()), &control, SLOT(init()));
+    MainWindow view(&a);
+    QObject::connect(&view, SIGNAL(alarmWindowOpen()), &budil, SLOT(show()));
+    QObject::connect(&budil, SIGNAL(Alarm(int,QString)), &control, SLOT(bud_action(int,QString)));
+    QObject::connect(&view, SIGNAL(openPort(QString)), &control, SLOT(openPort(QString)));
+    QObject::connect(&control, SIGNAL(toLog(QString)), &view, SLOT(appendStr(QString)));
+    QObject::connect(&control, SIGNAL(RefreshView(int,QString)), &view, SLOT(RefreshView(int,QString)));
+    QObject::connect(&a, SIGNAL(aboutToQuit()), &controlThread, SLOT(quit()));
+    view.show();
     return a.exec();
 }

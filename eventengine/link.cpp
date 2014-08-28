@@ -1,17 +1,43 @@
 #include "link.h"
 #include <QTime>
 
+#include <QDebug>
+#include <QThread>
+
 Link::Link(QObject *parent) :
     QObject(parent)
 {
     enabled = true;
-    do_after_timer = new QTimer(this);
-    do_after_timer->setSingleShot(true);
-    QObject::connect(do_after_timer, SIGNAL(timeout()), this, SLOT(enableLink()));
     do_after = false;
     once_check = false;
     doing = false;
 }
+
+void Link::init()
+{
+    do_after_timer = new QTimer(this);
+    do_after_timer->setSingleShot(true);
+    QObject::connect(do_after_timer, SIGNAL(timeout()), this, SLOT(enableLink()));
+
+    timer = new QTimer();
+    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(_checkLink()));
+    timer->start(10);
+}
+
+
+//экспериментально
+void Link::checkStart(rc_bus *bus)
+{
+    _bus = bus;
+    timer = new QTimer();
+    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(_checkLink()));
+    timer->start(10);
+}
+void Link::_checkLink()
+{
+    checkLink(_bus);
+}
+//-----------------
 
 void Link::checkLink(rc_bus *bus)
 {
@@ -59,7 +85,7 @@ void Link::checkLink(rc_bus *bus)
     }
     catch(...)
     {
-        qDebug()<<QTime::currentTime().toString()+ " Ошибка проверки условий";
+        qDebug()<<" Ошибка проверки условий";
     }
 }
 

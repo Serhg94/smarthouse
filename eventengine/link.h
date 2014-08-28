@@ -22,6 +22,10 @@ public:
     void setDoAfter();
     void setDoAfterOnceCheck();
 
+    void checkStart(rc_bus *bus);
+    rc_bus *_bus;
+    QTimer *timer;
+
 private:
     bool doing;
     QTimer *do_after_timer;
@@ -30,6 +34,8 @@ signals:
 
 public slots:
     void enableLink();
+    void init();
+    void _checkLink();
 
 };
 

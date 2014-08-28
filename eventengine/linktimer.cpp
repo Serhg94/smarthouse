@@ -6,11 +6,27 @@ Linktimer::Linktimer(rc_bus *b, QObject *parent) :
      bus = b;
 }
 
-void Linktimer::start()
+void Linktimer::startInOneThread()
 {
-    timer = new QTimer(this);
+    timer = new QTimer();
+    for (int i = 0; i < links.size(); ++i) {
+        links.at(i)->_bus = bus;
+        links.at(i)->init();
+    }
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkLinks()));
     timer->start(10);
+}
+
+void Linktimer::startInManyThreads()
+{
+    for (int i = 0; i < links.size(); ++i) {
+        link_threads.append(new QThread());
+        links.at(i)->_bus = bus;
+        links.at(i)->moveToThread(link_threads.at(i));
+        link_threads.at(i)->start();
+        QObject::connect(link_threads.at(i), SIGNAL(started()), links.at(i), SLOT(init()));
+        //links.at(i)->checkStart(bus);
+    }
 }
 
 void Linktimer::checkLinks()

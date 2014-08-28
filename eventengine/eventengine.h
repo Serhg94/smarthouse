@@ -23,6 +23,9 @@
 #include <eventengine/saycommand.h>
 #include <eventengine/playcommand.h>
 #include <eventengine/mailcommand.h>
+#include <eventengine/variables/variables.h>
+#include <eventengine/variables/varcommand.h>
+#include <eventengine/variables/varcondition.h>
 
 #include <eventengine/link.h>
 #include <eventengine/linktimer.h>

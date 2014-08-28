@@ -42,7 +42,7 @@ public:
         }
         catch(...)
         {
-            qDebug()<<QTime::currentTime().toString()+" Ошибка отправки e-mail";
+            qDebug()<<" Ошибка отправки e-mail";
         }
     }
 

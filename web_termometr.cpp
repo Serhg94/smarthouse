@@ -1,7 +1,12 @@
 #include "web_termometr.h"
 #include <QDebug>
 
-web_termometr::web_termometr(QWidget *parent)
+web_termometr::web_termometr(QObject *parent)
+{
+}
+
+
+void web_termometr::init()
 {
     page = new QProcess();
     QObject::connect(page, SIGNAL(finished(int)), this, SLOT(recive_temp(int)));

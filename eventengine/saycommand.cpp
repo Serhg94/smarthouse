@@ -14,7 +14,7 @@ int sayCommand::doCommand(rc_bus *bus)
         break;
     case 2:
         speakTerm();
-        qDebug() << "temper = "<< tem->temper;
+        //qDebug() << "temper = "<< tem->temper;
         break;
     }
 }

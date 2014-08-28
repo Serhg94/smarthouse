@@ -22,7 +22,7 @@ public:
     ~alarmDialog();
 
 signals:
-    void Alarm(int sn);
+    void Alarm(int sn, QString action);
 
 public slots:
     void loadSettings();

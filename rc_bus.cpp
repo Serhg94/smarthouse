@@ -2,17 +2,21 @@
 #include <QTime>
 #include "rc_bus.h"
 
-rc_bus::rc_bus(QObject *parent, bool n) :
+rc_bus::rc_bus(bool n, QObject *parent) :
     QObject(parent)
 {
     net = n;
+}
+
+void rc_bus::init()
+{
     if (net)
     {
-        udpSocket = new QUdpSocket(this);
+        udpSocket = new QUdpSocket();
         udpSocket->bind(PORT_LISTEN1, QUdpSocket::ShareAddress);
         QObject::connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
         QObject::connect(this, SIGNAL(gettedString(QString)), this, SLOT(parseDataStr(QString)));
-        send_timer = new QTimer(this);
+        send_timer = new QTimer();
         ip = QHostAddress::Broadcast;
         QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
         send_timer->start(SEND_DELAY_MSEC);
@@ -21,21 +25,22 @@ rc_bus::rc_bus(QObject *parent, bool n) :
     {
         try
         {
-            init();
+            preset();
             serial = new QSerialPort();
-            QObject::connect(this->serial, SIGNAL(readyRead()), this, SLOT(readAllData()));
+            QObject::connect(serial, SIGNAL(readyRead()), this, SLOT(readAllData()));
             QObject::connect(this, SIGNAL(gettedString(QString)), this, SLOT(parseDataStr(QString)));
             open_port("Arduino Mega 2560", NULL);
-            send_timer = new QTimer(this);
+            send_timer = new QTimer();
             QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
             send_timer->start(SEND_DELAY_MSEC);
         }
         catch(...)
         {
-            qDebug() << QTime::currentTime().toString()+" Port open FAIL!";
+            qDebug() << " Port open FAIL!";
             QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка инициализации шины"));
         }
     }
+    qDebug()<<" Порт открыт";
 }
 
 
@@ -53,6 +58,7 @@ bool rc_bus::open_port(QString desport, QString nameport)
 {
     if (!net)
     try{
+        serial->close();
         //while(!serial->isOpen())
         {
             if (desport!=NULL)
@@ -91,7 +97,7 @@ bool rc_bus::open_port(QString desport, QString nameport)
                 //qDebug() << "Name        : " << info.portName();
                 //qDebug() << "Description : " << info.description();
                 //qDebug() << "Manufacturer: " << info.manufacturer();
-                qDebug()<<QTime::currentTime().toString()+" Порт открыт";
+                qDebug()<<" Порт открыт";
                 QString a("clr");
                 a[a.length()]='\n';
                 serial->write(a.toLatin1());
@@ -107,13 +113,13 @@ bool rc_bus::open_port(QString desport, QString nameport)
     }
     catch(...)
     {
-        qDebug() << QTime::currentTime().toString()+" Port open FAIL!";
+        qDebug() << " Port open FAIL!";
         return false;
     }
 }
 
 
-void rc_bus::init()
+void rc_bus::preset()
 {
     for(int i=0; i<10; i++)
     {
@@ -157,7 +163,7 @@ void rc_bus::send()
         }
         catch(...)
         {
-            qDebug()<<QDate::currentDate().toString()+" "+QTime::currentTime().toString()+" Ошибка отправки команды в шину";
+            qDebug()<<" Ошибка отправки команды в шину";
             //QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка отправки команды в шину"));
         }
     }
@@ -266,7 +272,7 @@ void rc_bus::parseDataStr(QString string)
     }
     catch(...)
     {
-        qDebug()<<QTime::currentTime().toString()+"Ошибка разбора входящей строки";
+        qDebug()<<"Ошибка разбора входящей строки";
         //QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка отправки команды в шину"));
     }
 }
@@ -300,7 +306,7 @@ void rc_bus::readAllData()
     }
     catch(...)
     {
-        qDebug()<<QTime::currentTime().toString()+" Ошибка чтения данных с шины";
+        qDebug()<<" Ошибка чтения данных с шины";
         //QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка чтения данных с шины"));
     }
 }
@@ -322,5 +328,5 @@ rc_bus::~rc_bus()
 {
     if(!net)
         serial->close();
-    qDebug()<<QTime::currentTime().toString()+" Порт закрыт";
+    qDebug()<<" Порт закрыт";
 }

@@ -3,22 +3,16 @@
 
 audiosteck::audiosteck(QWidget *parent)
 {
+
 }
 
-audiosteck::~audiosteck()
-{
-    qDebug() << "DESTRUCTOR";
-}
-
-void audiosteck::run()
+void audiosteck::init()
 {
     player = new QMediaPlayer();
     maint = new QTimer();
     QObject::connect(maint, SIGNAL(timeout()), this, SLOT(update()));
     maint->start(100);
-    exec();
 }
-
 
 void audiosteck::update()
 {
@@ -33,7 +27,7 @@ void audiosteck::update()
     }
     catch(...)
     {
-        qDebug() << QTime::currentTime().toString()+" Can't play file";
+        qDebug() << " Can't play file";
     }
 }
 

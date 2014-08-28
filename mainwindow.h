@@ -4,17 +4,10 @@
 #include <QMainWindow>
 #include <QApplication>
 #include <QtCore/QDebug>
-#include <QUdpSocket>
 #include <QSettings>
-#include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
-#include "alarmdialog.h"
-#include "rc_bus.h"
-#include "audiosteck.h"
-#include "web_termometr.h"
-#include "mail/sender.h"
-#include "linkmaker.h"
-#include <eventengine/eventengine.h>
+#include <QTimer>
+#include <QProcess>
 
 
 namespace Ui {
@@ -26,48 +19,26 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    QTime door_alarm;
-    QTime zamok_alarm;
-    QTime info_alarm;
-    QTime doorlight_alarm;
-    bool da_enable;
-    bool za_enable;
-    bool info_enable;
-    bool doorlight_enable;
-
-    //логическое состояние двери
-    int door_status;
-
-    Linktimer *linkengine;
-    QApplication *app;
-    QUdpSocket *udpSocket;
-    rc_bus *bus;
-    audiosteck *player;
-    web_termometr *termo;
-    alarmDialog *budil;
-    QTimer *up_timer; //таймер обновления монитора контроллеров
-    QTimer *main_control_timer; //таймер контроля и управления (выключение включения света по ДД в прихожей)
-    QTimer *maintain_timer; //таймер обслуживания - переподключение, сброс текста в окне
     explicit MainWindow(QApplication *a, QWidget *parent = 0);
-    bool exist_online();
-    void initPortBox();
+    QTimer *maintain_timer;
     ~MainWindow();
 
 public slots:
-    void RefreshView(int);
-    void update();
+    void initPortBox();
     void loadSettings();
     void saveSettings();
-    void openPort();
-    void speakTime();
-    void speakTerm(int t);
-    void bud_action(int num);
-    void processPendingDatagrams();
-    void sendDatagram(QString str);
-    void main_control();
+    void portButt();
+    void alarmButt();
+    void RefreshView(int sn, QString info);
+    void appendStr(QString info);
     void maintain();
 
+signals:
+    void openPort(QString port);
+    void alarmWindowOpen();
+
 private:
+    QApplication *app;
     Ui::MainWindow *ui;
 };
 

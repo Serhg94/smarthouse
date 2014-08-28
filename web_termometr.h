@@ -5,11 +5,11 @@
 #include <QTimer>
 #include <QProcess>
 
-class web_termometr : public QWidget
+class web_termometr : public QObject
 {
     Q_OBJECT
 public:
-    explicit web_termometr(QWidget *parent = 0);
+    explicit web_termometr(QObject *parent = 0);
     QTimer *maint;
     QProcess *page;
     int temper;
@@ -17,6 +17,7 @@ public:
 signals:
 
 public slots:
+    void init();
     void update();
     void recive_temp();
     void recive_temp(int t);

@@ -1,7 +1,8 @@
 #include "linkmaker.h"
 #include <QMessageBox>
 
-Linktimer* makeLinksFromFile(QString name, rc_bus *bus, audiosteck *player, web_termometr *termo)
+Linktimer* makeLinksFromFile(QString name, rc_bus *bus, audiosteck *player,
+                             web_termometr *termo, variables *var)
 {
     try
     {
@@ -17,22 +18,22 @@ Linktimer* makeLinksFromFile(QString name, rc_bus *bus, audiosteck *player, web_
             if (!str.contains("//"))
             {
                 str = str.replace(" ", "");
-                lt->links.append(parseLink(str, bus, player, termo));
+                lt->links.append(parseLink(str, bus, player, termo, var));
                 //qDebug() << str;
             }
             lineLength = file.readLine(buf, sizeof(buf));
         }
-        qDebug()<<QTime::currentTime().toString()+" Скрипты загружены";
+        qDebug()<<" Скрипты загружены";
         return lt;
     }
     catch(...)
     {
-        qDebug()<<QTime::currentTime().toString()+" Ошибка разбора файла скриптов";
+        qDebug()<<" Ошибка разбора файла скриптов";
         QMessageBox::critical(NULL,QObject::tr("Ошибка"),QObject::tr("Ошибка разбора файла скриптов!"));
     }
 }
 
-Link* parseLink(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo)
+Link* parseLink(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo, variables *var)
 {
     Link *lk = new Link();
     bool ok;
@@ -43,28 +44,28 @@ Link* parseLink(QString str, rc_bus *bus, audiosteck *player, web_termometr *ter
     if (str.mid(str.indexOf(";")).contains("oncecheck", Qt::CaseInsensitive))
         lk->setDoAfterOnceCheck();
     if (ok) lk->timeout = timeout; else return lk;
-    lk->action = parseAction(str.mid(str.indexOf("then")+4, str.indexOf(";")-str.indexOf("then")-4), bus, player, termo);
-    lk->event = parseEvent(str.mid(str.indexOf("if")+2, str.indexOf("then")-str.indexOf("if")-2), bus, player, termo);
+    lk->action = parseAction(str.mid(str.indexOf("then")+4, str.indexOf(";")-str.indexOf("then")-4), bus, player, termo, var);
+    lk->event = parseEvent(str.mid(str.indexOf("if")+2, str.indexOf("then")-str.indexOf("if")-2), bus, player, termo, var);
     //qDebug() << timeout;
     //qDebug() << str.mid(str.indexOf("if")+2, str.indexOf("then")-str.indexOf("if")-2);
     //qDebug() << str.mid(str.indexOf("then")+4, str.indexOf(";")-str.indexOf("then")-4);
     return lk;
 }
 
-Action* parseAction(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo)
+Action* parseAction(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo, variables *var)
 {
     //qDebug() << str;
     Action *ac = new Action();
     while (str.indexOf("(")!=-1)
     {
         //qDebug() << str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1);
-        ac->commands.append(parseCommand(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1), bus, player, termo));
+        ac->commands.append(parseCommand(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1), bus, player, termo, var));
         str = str.mid(str.indexOf(")")+1);
     }
     return ac;
 }
 
-Command* parseCommand(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo)
+Command* parseCommand(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo, variables *var)
 {
     //qDebug() << str;
     if (str.mid(0,7).contains("saytime", Qt::CaseInsensitive))
@@ -123,22 +124,35 @@ Command* parseCommand(QString str, rc_bus *bus, audiosteck *player, web_termomet
         cmd->body = str.mid(str.indexOf("|")+1);
         return cmd;
     }
+    else
+    if (str.mid(0,3).contains("var", Qt::CaseInsensitive))
+    {
+        varCommand *cmd = new varCommand();
+        int pos;
+        if (str.indexOf("=")>-1) {pos = str.indexOf("="); cmd->type = 1;}
+        if (str.indexOf("+")>-1) {pos = str.indexOf("+"); cmd->type = 2;}
+        if (str.indexOf("-")>-1) {pos = str.indexOf("-"); cmd->type = 3;}
+        cmd->number = (str.mid(4,pos-4)).toInt();
+        cmd->value = (str.mid(pos+1).toInt());
+        cmd->vars = var;
+        return cmd;
+    }
 }
 
-Event* parseEvent(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo)
+Event* parseEvent(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo, variables *var)
 {
     //qDebug() << str;
     Event *ev = new Event();
     while (str.indexOf("(")!=-1)
     {
         //qDebug() << str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1);
-        ev->conditions.append(parseCondition(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1), bus, player, termo));
+        ev->conditions.append(parseCondition(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1), bus, player, termo, var));
         str = str.mid(str.indexOf(")")+1);
     }
     return ev;
 }
 
-Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo)
+Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo, variables *var)
 {
     //qDebug() << str;
     if (str.mid(0,4).contains("time", Qt::CaseInsensitive))
@@ -253,6 +267,22 @@ Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_term
         cmd->valtype = 2;
         cmd->value = (str.mid(6).toInt());
         //qDebug() << cmd->value;
+        return cmd;
+    }
+    else
+    if (str.mid(0,3).contains("var", Qt::CaseInsensitive))
+    {
+        varCondition *cmd = new varCondition();
+        int pos;
+        if (str.indexOf(">")>-1) {pos = str.indexOf(">"); cmd->type = 1;}
+        if (str.indexOf("<")>-1) {pos = str.indexOf("<"); cmd->type = 2;}
+        if (str.indexOf("=")>-1) {pos = str.indexOf("="); cmd->type = 3;}
+        if (str.indexOf("!")>-1) {pos = str.indexOf("!"); cmd->type = 4;}
+        cmd->number = (str.mid(4,pos-4)).toInt();
+        cmd->value = (str.mid(pos+1).toInt());
+        cmd->vars = var;
+        //qDebug() << cmd->value;
+        //qDebug() << cmd->number;
         return cmd;
     }
 }

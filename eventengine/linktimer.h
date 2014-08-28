@@ -2,6 +2,7 @@
 #define LINKTIMER_H
 
 #include <QObject>
+#include <QThread>
 #include <eventengine/link.h>
 
 
@@ -13,10 +14,12 @@ public:
     QVector <Link*> links;
     rc_bus *bus;
     QTimer *timer;
-    void start();
+    QVector <QThread*> link_threads;
 signals:
 
 public slots:
+    void startInManyThreads();
+    void startInOneThread();
     void checkLinks();
 };
 

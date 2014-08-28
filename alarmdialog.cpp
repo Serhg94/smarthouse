@@ -9,6 +9,7 @@ alarmDialog::alarmDialog(QWidget *parent) :
     ui(new Ui::alarmDialog)
 {
     ui->setupUi(this);
+    loadSettings();
     bud_timer = new QTimer(this);
     QObject::connect(bud_timer, SIGNAL(timeout()), this, SLOT(bud_action()));
     bud_timer->start(BUD_SEC);
@@ -135,7 +136,7 @@ void alarmDialog::bud_action()
                 (curt.minute()==ui->altimeEdit->time().minute()))
             {
                 //qDebug() << "БУДИЛЬНИК 1";
-                emit Alarm(1);
+                emit Alarm(1, getComm1());
             }
         }
     }
@@ -153,7 +154,7 @@ void alarmDialog::bud_action()
                 (curt.minute()==ui->altimeEdit_2->time().minute()))
             {
                 //qDebug() << "БУДИЛЬНИК 2";
-                emit Alarm(2);
+                emit Alarm(2, getComm2());
             }
         }
     }
@@ -171,7 +172,7 @@ void alarmDialog::bud_action()
                 (curt.minute()==ui->altimeEdit_3->time().minute()))
             {
                 //qDebug() << "БУДИЛЬНИК 3";
-                emit Alarm(3);
+                emit Alarm(3, getComm3());
             }
         }
     }
@@ -180,5 +181,6 @@ void alarmDialog::bud_action()
 
 alarmDialog::~alarmDialog()
 {
+    saveSettings();
     delete ui;
 }

@@ -25,11 +25,12 @@ public:
     QString portstr;
     QHostAddress ip;
 
-    explicit rc_bus(QObject *parent = 0, bool n = false);
+    explicit rc_bus(bool n = false, QObject *parent = 0);
+    void run();
     int checkString(QString string, int from);
     void sendCommand(int sn, QString string);
     void sendStr(QString string);
-    void init();
+    void preset();
     bool open_port(QString desport, QString nameport);
 
     QSerialPort *serial;
@@ -43,6 +44,7 @@ signals:
 
 public slots:
     void reopen();
+    void init();
     void changeState(int num_ctr, int num_set);
 
 private slots:
