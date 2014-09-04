@@ -7,7 +7,7 @@ varCommand::varCommand(QObject *parent) :
 
 int varCommand::doCommand(rc_bus *bus)
 {
-    vars->changeValue(number, value);
+    //qDebug() << number << " - " << vars->vars.at(number) << " - " << value;
     switch(type)
     {
     case 1:

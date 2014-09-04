@@ -8,5 +8,5 @@ busCommand::busCommand(QObject *parent) :
 int busCommand::doCommand(rc_bus *bus)
 {
     bus->sendStr(comm);
-        qDebug() << "1";
+    //qDebug() << "1";
 }

@@ -37,6 +37,7 @@ void controller::init()
     audio_thread.start();
     QObject::connect(&audio_thread, SIGNAL(started()), player, SLOT(init()));
 
+    bus_thread.setPriority(QThread::TimeCriticalPriority);
     bus = new rc_bus(true);
     bus->moveToThread(&bus_thread);
     bus_thread.start();
@@ -52,14 +53,15 @@ void controller::init()
 
     // подключение CELAC
     linkengine = makeLinksFromFile("scripts.txt", bus, player, termo, vars);
-    if (linkengine->links.size()<30)
-    {
+    //if (linkengine->links.size()<30)
+    //{
         //linkengine->moveToThread(&link_thread);
         //link_thread.start();
         //QObject::connect(&link_thread, SIGNAL(started()), linkengine, SLOT(startInOneThread()));
-        linkengine->startInOneThread();
-    }
-    else
+
+        //linkengine->startInOneThread();
+    //}
+    //else
         linkengine->startInManyThreads();
 
     up_timer = new QTimer();
