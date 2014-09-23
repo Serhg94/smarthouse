@@ -35,5 +35,6 @@ void web_termometr::recive_temp(int t)
 {
     page->close();
     temper = t;
-    //qDebug() << temper;
+    if (_debug)
+        qDebug() << temper;
 }

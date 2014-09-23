@@ -5,4 +5,4 @@ Command::Command(QObject *parent) :
 {
 }
 
-int Command::doCommand(rc_bus *bus){qDebug() << "ERROR";return 200;}
+int Command::doCommand(){qDebug() << "ERROR";return 200;}

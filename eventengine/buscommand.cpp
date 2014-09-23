@@ -5,8 +5,9 @@ busCommand::busCommand(QObject *parent) :
 {
 }
 
-int busCommand::doCommand(rc_bus *bus)
+int busCommand::doCommand()
 {
-    bus->sendStr(comm);
-    //qDebug() << "1";
+    io_connector->bus->sendStr(comm);
+    //if (bus->_debug)
+        //qDebug() << " Bus send: " << comm;
 }

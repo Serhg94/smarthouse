@@ -1,13 +1,12 @@
 #include "linkmaker.h"
 #include <QMessageBox>
 
-Linktimer* makeLinksFromFile(QString name, rc_bus *bus, audiosteck *player,
-                             web_termometr *termo, variables *var)
+Linktimer* makeLinksFromFile(QString name, IOconnector *conn)
 {
     try
     {
         QFile file(name);
-        Linktimer *lt = new Linktimer(bus);
+        Linktimer *lt = new Linktimer();
         if (!file.open(QIODevice::ReadOnly)) // Проверяем, возможно ли открыть наш файл для чтения
             return lt; // если это сделать невозможно, то завершаем функцию
         char buf[2048];
@@ -18,7 +17,7 @@ Linktimer* makeLinksFromFile(QString name, rc_bus *bus, audiosteck *player,
             if (!str.contains("//"))
             {
                 str = str.replace(" ", "");
-                lt->links.append(parseLink(str, bus, player, termo, var));
+                lt->links.append(parseLink(str, conn));
                 //qDebug() << str;
             }
             lineLength = file.readLine(buf, sizeof(buf));
@@ -33,7 +32,7 @@ Linktimer* makeLinksFromFile(QString name, rc_bus *bus, audiosteck *player,
     }
 }
 
-Link* parseLink(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo, variables *var)
+Link* parseLink(QString str, IOconnector *conn)
 {
     Link *lk = new Link();
     bool ok;
@@ -44,53 +43,52 @@ Link* parseLink(QString str, rc_bus *bus, audiosteck *player, web_termometr *ter
     if (str.mid(str.indexOf(";")).contains("oncecheck", Qt::CaseInsensitive))
         lk->setDoAfterOnceCheck();
     if (ok) lk->timeout = timeout; else return lk;
-    lk->action = parseAction(str.mid(str.indexOf("then")+4, str.indexOf(";")-str.indexOf("then")-4), bus, player, termo, var);
-    lk->event = parseEvent(str.mid(str.indexOf("if")+2, str.indexOf("then")-str.indexOf("if")-2), bus, player, termo, var);
+    lk->action = parseAction(str.mid(str.indexOf("then")+4, str.indexOf(";")-str.indexOf("then")-4), conn);
+    lk->event = parseEvent(str.mid(str.indexOf("if")+2, str.indexOf("then")-str.indexOf("if")-2), conn);
     //qDebug() << timeout;
     //qDebug() << str.mid(str.indexOf("if")+2, str.indexOf("then")-str.indexOf("if")-2);
     //qDebug() << str.mid(str.indexOf("then")+4, str.indexOf(";")-str.indexOf("then")-4);
     return lk;
 }
 
-Action* parseAction(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo, variables *var)
+Action* parseAction(QString str, IOconnector *conn)
 {
     //qDebug() << str;
     Action *ac = new Action();
     while (str.indexOf("(")!=-1)
     {
         //qDebug() << str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1);
-        ac->commands.append(parseCommand(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1), bus, player, termo, var));
+        ac->commands.append(parseCommand(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1), conn));
         str = str.mid(str.indexOf(")")+1);
     }
     return ac;
 }
 
-Command* parseCommand(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo, variables *var)
+Command* parseCommand(QString str, IOconnector *conn)
 {
     //qDebug() << str;
     if (str.mid(0,7).contains("saytime", Qt::CaseInsensitive))
     {
         sayCommand *cmd = new sayCommand();
-        cmd->pl = player;
         cmd->type = 1;
+        cmd->io_connector = conn;
         return cmd;
     }
     else
     if (str.mid(0,7).contains("saytemp", Qt::CaseInsensitive))
     {
         sayCommand *cmd = new sayCommand();
-        cmd->pl = player;
-        cmd->tem = termo;
         cmd->type = 2;
+        cmd->io_connector = conn;
         return cmd;
     }
     else
     if (str.mid(0,4).contains("play", Qt::CaseInsensitive))
     {
         playCommand *cmd = new playCommand();
-        cmd->pl = player;
         cmd->file = str.mid(str.indexOf("|")+1);
         //qDebug() << cmd->file;
+        cmd->io_connector = conn;
         return cmd;
     }
     else
@@ -99,6 +97,7 @@ Command* parseCommand(QString str, rc_bus *bus, audiosteck *player, web_termomet
         busCommand *cmd = new busCommand();
         cmd->comm = str.mid(str.indexOf(".")+1);
         //qDebug() << cmd->comm;
+        cmd->io_connector = conn;
         return cmd;
     }
     else
@@ -122,6 +121,7 @@ Command* parseCommand(QString str, rc_bus *bus, audiosteck *player, web_termomet
         str = str.mid(str.indexOf("|", str.indexOf("|")+1));
 
         cmd->body = str.mid(str.indexOf("|")+1);
+        cmd->io_connector = conn;
         return cmd;
     }
     else
@@ -134,25 +134,25 @@ Command* parseCommand(QString str, rc_bus *bus, audiosteck *player, web_termomet
         if (str.indexOf("-")>-1) {pos = str.indexOf("-"); cmd->type = 3;}
         cmd->number = (str.mid(4,pos-4)).toInt();
         cmd->value = (str.mid(pos+1).toInt());
-        cmd->vars = var;
+        cmd->io_connector = conn;
         return cmd;
     }
 }
 
-Event* parseEvent(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo, variables *var)
+Event* parseEvent(QString str, IOconnector *conn)
 {
     //qDebug() << str;
     Event *ev = new Event();
     while (str.indexOf("(")!=-1)
     {
         //qDebug() << str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1);
-        ev->conditions.append(parseCondition(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1), bus, player, termo, var));
+        ev->conditions.append(parseCondition(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1), conn));
         str = str.mid(str.indexOf(")")+1);
     }
     return ev;
 }
 
-Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_termometr *termo, variables *var)
+Condition* parseCondition(QString str, IOconnector *conn)
 {
     //qDebug() << str;
     if (str.mid(0,4).contains("time", Qt::CaseInsensitive))
@@ -173,6 +173,7 @@ Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_term
         //qDebug() << cmd->type;
         cmd->time = QTime(str.mid(5, str.indexOf(".")-5).toInt(), str.mid(str.indexOf(".")+1).toInt());
         //qDebug() << str.mid(str.indexOf(".")+1).toInt();
+        cmd->io_connector = conn;
         return cmd;
     }
     else
@@ -191,6 +192,7 @@ Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_term
         //qDebug() << str.mid(4).toInt();
         cmd->day = str.mid(4).toInt();
         //qDebug() << str.mid(str.indexOf(".")+1).toInt();
+        cmd->io_connector = conn;
         return cmd;
     }
     else
@@ -210,6 +212,7 @@ Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_term
         if (str.indexOf("=0")>-1) {pos = str.indexOf("=0"); cmd->type = 4;}
         cmd->pin = (str.mid(11,pos-11)).toInt();
         //qDebug() << (str.mid(11,pos-11)).toInt();
+        cmd->io_connector = conn;
         return cmd;
     }
     else
@@ -229,6 +232,7 @@ Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_term
         cmd->valtype = 0;
         cmd->value = (str.mid(9).toInt());
         //qDebug() << cmd->value;
+        cmd->io_connector = conn;
         return cmd;
     }
     else
@@ -248,6 +252,7 @@ Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_term
         cmd->valtype = 1;
         cmd->value = (str.mid(6).toInt());
         //qDebug() << cmd->value;
+        cmd->io_connector = conn;
         return cmd;
     }
     else
@@ -267,6 +272,7 @@ Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_term
         cmd->valtype = 2;
         cmd->value = (str.mid(6).toInt());
         //qDebug() << cmd->value;
+        cmd->io_connector = conn;
         return cmd;
     }
     else
@@ -280,9 +286,9 @@ Condition* parseCondition(QString str, rc_bus *bus, audiosteck *player, web_term
         if (str.indexOf("!")>-1) {pos = str.indexOf("!"); cmd->type = 4;}
         cmd->number = (str.mid(4,pos-4)).toInt();
         cmd->value = (str.mid(pos+1).toInt());
-        cmd->vars = var;
         //qDebug() << cmd->value;
         //qDebug() << cmd->number;
+        cmd->io_connector = conn;
         return cmd;
     }
 }

@@ -11,7 +11,7 @@ class Event : public QObject
 
 public:
     QVector <Condition*> conditions;
-    int checkEvent(rc_bus *bus);
+    int checkEvent();
     explicit Event(QObject *parent = 0);
 
 signals:

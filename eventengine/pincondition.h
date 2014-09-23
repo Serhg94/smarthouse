@@ -10,7 +10,7 @@ class pinCondition : public Condition
     Q_OBJECT
 
 private:
-    int pinState(rc_bus *bus);
+    int pinState();
 
 public:
     explicit pinCondition(QObject *parent = 0);
@@ -23,8 +23,8 @@ public:
     short int oldState;
     short int mk;
     // 1 - выполняется, 0 - не выполняется, 6 - что то пошло не так.
-    int checkCondition(rc_bus *bus);
-    void init(rc_bus *bus);
+    int checkCondition();
+    void init();
 signals:
 
 public slots:

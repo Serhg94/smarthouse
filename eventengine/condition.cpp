@@ -6,4 +6,4 @@ Condition::Condition(QObject *parent) :
 
 }
 
-int Condition::checkCondition(rc_bus *bus){qDebug() << "ERROR";return 200;}
+int Condition::checkCondition(){qDebug() << "ERROR";return 200;}

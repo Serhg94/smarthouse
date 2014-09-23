@@ -9,6 +9,7 @@
 #include <eventengine/event.h>
 #include <eventengine/timecondition.h>
 #include <eventengine/analogcondition.h>
+#include "IOconnector.h"
 
 // type: 1- пин изменился на 1, 2 - пин изменился на 0, 3 - пин равен 1, 4 - пин равен 0.
 // pintype: 1- sets, 2 - rebs, 3 - butt

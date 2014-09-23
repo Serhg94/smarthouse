@@ -5,7 +5,6 @@
 #include <eventengine/event.h>
 #include <eventengine/action.h>
 #include <QTimer>
-#include "rc_bus.h"
 
 class Link : public QObject
 {
@@ -18,12 +17,11 @@ public:
     bool do_after;
     bool once_check;
     int timeout;
-    void checkLink(rc_bus *bus);
+    void checkLink();
     void setDoAfter();
     void setDoAfterOnceCheck();
 
-    void checkStart(rc_bus *bus);
-    rc_bus *_bus;
+    void checkStart();
     QTimer *timer;
 
 private:

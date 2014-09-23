@@ -9,7 +9,7 @@ class busCommand : public Command
 public:
     explicit busCommand(QObject *parent = 0);
     QString comm;
-    int doCommand(rc_bus *bus);
+    int doCommand();
 
 signals:
 

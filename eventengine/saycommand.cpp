@@ -5,28 +5,31 @@ sayCommand::sayCommand(QObject *parent) :
 {
 }
 
-int sayCommand::doCommand(rc_bus *bus)
+int sayCommand::doCommand()
 {
     switch(type)
     {
     case 1:
         speakTime();
+        if (io_connector->bus->_debug)
+            qDebug() << " Say time";
         break;
     case 2:
         speakTerm();
-        //qDebug() << "temper = "<< tem->temper;
+        if (io_connector->bus->_debug)
+            qDebug() << " Say temper = "<< io_connector->termo->temper;
         break;
     }
 }
 
 void sayCommand::speakTerm()
 {
-    int t = tem->temper;
+    int t = io_connector->termo->temper;
     if ((t >40)||(t<-40)) return;
-    pl->add("/temper/temp.wav");
+    io_connector->player->add("/temper/temp.wav");
     QString s;  s = QString("/temper/%1.wav")
             .arg(t);
-    pl->add(s);
+    io_connector->player->add(s);
     //qDebug() << s;
 }
 
@@ -34,13 +37,13 @@ void sayCommand::speakTerm()
 void sayCommand::speakTime()
 {
     QTime cur = QTime::currentTime();
-    pl->add("vremya.wav");
+    io_connector->player->add("vremya.wav");
     QString s;  s = QString("/hours/%1.wav")
             .arg(cur.hour());
-    pl->add(s);
+    io_connector->player->add(s);
     //qDebug() << s;
     s = QString("/minutes/%1.wav")
                 .arg(cur.minute());
-    pl->add(s);
+    io_connector->player->add(s);
     //qDebug() << s;
 }

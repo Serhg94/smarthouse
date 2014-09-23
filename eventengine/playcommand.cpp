@@ -6,7 +6,9 @@ playCommand::playCommand(QObject *parent) :
 }
 
 
-int playCommand::doCommand(rc_bus *bus)
+int playCommand::doCommand()
 {
-    pl->add(file);
+    if (io_connector->bus->_debug)
+        qDebug() << " Play " << file;
+    io_connector->player->add(file);
 }

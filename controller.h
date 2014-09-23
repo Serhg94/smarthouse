@@ -14,21 +14,18 @@
 #include "linkmaker.h"
 #include <eventengine/eventengine.h>
 #include <QTimer>
+#include "config.h"
+#include "IOconnector.h"
 
 class controller : public QObject
 {
     Q_OBJECT
-public:
-    variables *vars;
-    Linktimer *linkengine;
-    QUdpSocket *udpSocket;
-    QThread bus_thread;
+private:
     QThread link_thread;
-    QThread audio_thread;
-    QThread tem_thread;
-    rc_bus *bus;
-    audiosteck *player;
-    web_termometr *termo;
+
+public:
+    IOconnector *io_connector;
+    Linktimer *linkengine;
     QTimer *up_timer; //таймер обновления монитора контроллеров
     QTimer *main_control_timer; //таймер контроля и управления (выключение включения света по ДД в прихожей)
     QTimer *maintain_timer; //таймер обслуживания - переподключение, сброс текста в окне
@@ -37,6 +34,7 @@ public:
     explicit controller(QObject *parent = 0);
     bool exist_online();
     void initPortBox();
+    void readConfig(QString name);
     ~controller();
 
 public slots:
@@ -46,6 +44,7 @@ public slots:
     void speakTime();
     void sendToView(int sn);
     void speakTerm(int t);
+    void sendVariables();
     void appendStr(QString info);
     void bud_action(int num, QString action);
     void processPendingDatagrams();
@@ -56,8 +55,8 @@ signals:
     void RefreshView(int sn, QString info);
     void toLog(QString info);
 
-public slots:
-
+private slots:
+    void _debugInfo(QString msg);
 };
 
 #endif // CONTROLLER_H

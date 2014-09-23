@@ -49,7 +49,8 @@ SOURCES += main.cpp\
     linkmaker.cpp \
     controller.cpp \
     eventengine/variables/varcondition.cpp \
-    eventengine/variables/varcommand.cpp
+    eventengine/variables/varcommand.cpp \
+    IOconnector.cpp
 
 HEADERS  += mainwindow.h \
     rc_bus.h \
@@ -89,7 +90,9 @@ HEADERS  += mainwindow.h \
     linkmaker.h \
     controller.h \
     eventengine/variables/varcondition.h \
-    eventengine/variables/varcommand.h
+    eventengine/variables/varcommand.h \
+    IOconnector.h \
+    config.h
 
 FORMS    += mainwindow.ui \
     alarmdialog.ui

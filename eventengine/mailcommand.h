@@ -11,7 +11,7 @@ public:
     explicit mailCommand(QObject *parent = 0);
 
     QString server, sender, to, title, body;
-    int doCommand(rc_bus *bus);
+    int doCommand();
 signals:
 
 public slots:

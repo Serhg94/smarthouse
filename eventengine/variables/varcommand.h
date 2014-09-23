@@ -10,12 +10,11 @@ class varCommand : public Command
     Q_OBJECT
 public:
     explicit varCommand(QObject *parent = 0);
-    variables *vars;
     //1-присвоить, 2-плюс, 3-минус
     short int type;
     short int number;
     int value;
-    int doCommand(rc_bus *bus);
+    int doCommand();
 signals:
 
 public slots:

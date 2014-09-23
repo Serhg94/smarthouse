@@ -1,0 +1,16 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define READ_SYCLES 100000
+#define MCT_MSEC 300
+#define MAINTAIN_MSEC 30000
+#define UPT_MSEC 5000
+#define PORT_SEND 6668
+#define PORT_LISTEN 6669
+#define DOOR_ALARM_SEC 300
+#define ZAMOK_ALARM_SEC 300
+#define SAY_INFO_SEC 1800
+#define DOOR_LIGHT_SEC 45
+#define VAR_COUNT 100
+
+#endif // CONFIG_H

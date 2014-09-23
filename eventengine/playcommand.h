@@ -13,8 +13,7 @@ public:
     // путь к файлу, который нужно проиграть
     QString file;
 
-    audiosteck *pl;
-    int doCommand(rc_bus *bus);
+    int doCommand();
 
 private:
 

@@ -3,18 +3,6 @@
 
 
 
-#define READ_SYCLES 100000
-#define MCT_MSEC 300
-#define MAINTAIN_MSEC 30000
-#define UPT_MSEC 5000
-#define PORT_SEND 6668
-#define PORT_LISTEN 6669
-#define DOOR_ALARM_SEC 300
-#define ZAMOK_ALARM_SEC 300
-#define SAY_INFO_SEC 1800
-#define DOOR_LIGHT_SEC 45
-
-
 controller::controller(QObject *parent) :
     QObject(parent)
 {
@@ -22,47 +10,28 @@ controller::controller(QObject *parent) :
 
 void controller::init()
 {
-    //6668 - в него сервер отправляет
-    //6669 - его сервер слушает
-    udpSocket = new QUdpSocket();
-    udpSocket->bind(PORT_LISTEN, QUdpSocket::ShareAddress);
+    io_connector = new IOconnector(this);
 
-    termo = new web_termometr();
-    termo->moveToThread(&tem_thread);
-    tem_thread.start();
-    QObject::connect(&tem_thread, SIGNAL(started()), termo, SLOT(init()));
-
-    player = new audiosteck();
-    player->moveToThread(&audio_thread);
-    audio_thread.start();
-    QObject::connect(&audio_thread, SIGNAL(started()), player, SLOT(init()));
-
-    bus_thread.setPriority(QThread::TimeCriticalPriority);
-    bus = new rc_bus(true);
-    bus->moveToThread(&bus_thread);
-    bus_thread.start();
-    QObject::connect(&bus_thread, SIGNAL(started()), bus, SLOT(init()));
-
-    QObject::connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
-    QObject::connect(bus, SIGNAL(gettedString(QString)), this, SLOT(appendStr(QString)));
-    QObject::connect(bus, SIGNAL(sendedString(QString)), this, SLOT(appendStr(QString)));
-    QObject::connect(bus, SIGNAL(gettedString(QString)), this, SLOT(sendDatagram(QString)));
-    QObject::connect(bus, SIGNAL(statsChanged(int)), this, SLOT(sendToView(int)));
-
-    vars = new variables();
-
+    QObject::connect(io_connector->udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
+    QObject::connect(io_connector->bus, SIGNAL(gettedString(QString)), this, SLOT(appendStr(QString)));
+    QObject::connect(io_connector->bus, SIGNAL(sendedString(QString)), this, SLOT(appendStr(QString)));
+    QObject::connect(io_connector->bus, SIGNAL(gettedString(QString)), this, SLOT(sendDatagram(QString)));
+    QObject::connect(io_connector->bus, SIGNAL(statsChanged(int)), this, SLOT(sendToView(int)));
+    QObject::connect(io_connector->vars, SIGNAL(valueChanged(int,int)), this, SLOT(sendVariables()));
     // подключение CELAC
-    linkengine = makeLinksFromFile("scripts.txt", bus, player, termo, vars);
+    linkengine = makeLinksFromFile("scripts.txt", io_connector);
     //if (linkengine->links.size()<30)
     //{
         //linkengine->moveToThread(&link_thread);
         //link_thread.start();
         //QObject::connect(&link_thread, SIGNAL(started()), linkengine, SLOT(startInOneThread()));
-
         //linkengine->startInOneThread();
     //}
     //else
         linkengine->startInManyThreads();
+
+    readConfig("config.ini");
+    QObject::connect(this, SIGNAL(toLog(QString)), this, SLOT(_debugInfo(QString)));
 
     up_timer = new QTimer();
     QObject::connect(up_timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -79,9 +48,60 @@ void controller::init()
 }
 
 
+void controller::readConfig(QString name)
+{
+    try
+    {
+        QFile file(name);
+        if (!file.open(QIODevice::ReadOnly)) { // Проверяем, возможно ли открыть наш файл для чтения
+            qDebug()<<" Не могу найти файл настроек";
+            return; // если это сделать невозможно, то завершаем функцию
+        }
+        char buf[2048];
+        qint64 lineLength = file.readLine(buf, sizeof(buf));
+        while(lineLength != -1)
+        {
+            QString str(buf);
+            if (!str.contains("//"))
+            {
+                QStringList list = str.split("=");
+                if (list.size()==2)
+                {
+                    if (list[0].contains("debug")){
+                        if (list[1].contains("1")){
+                            io_connector->bus->_debug = true;
+                            io_connector->termo->_debug = true;
+                        }
+                    }
+                    else if (list[0].contains("var")){
+                        int num = list[0].mid(str.indexOf("[")+1,
+                                              str.indexOf("]")-str.indexOf("[")-1).toInt();
+                        io_connector->vars->changeValue(num, list[1].toInt());
+                    }
+                }
+
+            }
+            lineLength = file.readLine(buf, sizeof(buf));
+        }
+        qDebug()<<" Настройки загружены";
+        return;
+    }
+    catch(...)
+    {
+        qDebug()<<" Ошибка разбора файла настроек";
+        //QMessageBox::critical(NULL,QObject::tr("Ошибка"),QObject::tr("Ошибка разбора файла скриптов!"));
+    }
+}
+
+void controller::_debugInfo(QString msg)
+{
+    if (io_connector->bus->_debug)
+        qDebug() << " " << msg;
+}
+
 void controller::openPort(QString s)
 {
-    bus->open_port(NULL, s);
+    io_connector->bus->open_port(NULL, s);
 }
 
 
@@ -95,7 +115,7 @@ void controller::update()
 {
     //for(int i = 0; i<=10; i++)
     //{
-    //    bus->stat[i][1]=0;
+    //    io_connector->bus->stat[i][1]=0;
     //}
     emit RefreshView(1, "1 - OFFLINE");
     emit RefreshView(2, "2 - OFFLINE");
@@ -104,20 +124,20 @@ void controller::update()
     emit RefreshView(5, "5 - OFFLINE");
     emit RefreshView(6, "6 - OFFLINE");
 
-    bus->sendStr("clr");
+    io_connector->bus->sendStr("clr");
     //QString a("clr");
     //a[a.length()]='\n';
-    //bus->serial->write(a.toLatin1());
+    //io_connector->bus->serial->write(a.toLatin1());
 }
 
 
 void controller::speakTerm(int t)
 {
     if ((t >40)||(t<-40)) return;
-    player->add("/temper/temp.wav");
+    io_connector->player->add("/temper/temp.wav");
     QString s;  s = QString("/temper/%1.wav")
             .arg(t);
-    player->add(s);
+    io_connector->player->add(s);
     //qDebug() << s;
 }
 
@@ -127,20 +147,20 @@ void controller::speakTime()
     QTime cur = QTime::currentTime();
     QString s;  s = QString("/hours/%1.wav")
             .arg(cur.hour());
-    player->add(s);
+    io_connector->player->add(s);
     //qDebug() << s;
     s = QString("/minutes/%1.wav")
                 .arg(cur.minute());
-    player->add(s);
+    io_connector->player->add(s);
     //qDebug() << s;
 }
 
 
 void controller::bud_action(int num, QString action)
 {
-    player->add("bud.wav");
+    io_connector->player->add("bud.wav");
     speakTime();
-    bus->sendStr(action);
+    io_connector->bus->sendStr(action);
 }
 
 
@@ -153,7 +173,7 @@ void controller::main_control()
 void controller::maintain()
 {
     QString s;  s = QString("temp%1;")
-            .arg(termo->temper);
+            .arg(io_connector->termo->temper);
     sendDatagram(s);
 
 }
@@ -163,33 +183,44 @@ void controller::sendToView(int sn)
 {
     QString s;  s = QString("S/N:0%1; SETS:%2; GAS:%3; REB:%4; TEM:%5; HUM:%6; BUT:%7;")
             .arg(sn)
-            .arg(bus->sets[sn])
-            .arg(bus->stat[sn][0])
-            .arg(bus->rebs[sn])
-            .arg(bus->stat[sn][1])
-            .arg(bus->stat[sn][2])
-            .arg(bus->butt[sn]);
+            .arg(io_connector->bus->sets[sn])
+            .arg(io_connector->bus->stat[sn][0])
+            .arg(io_connector->bus->rebs[sn])
+            .arg(io_connector->bus->stat[sn][1])
+            .arg(io_connector->bus->stat[sn][2])
+            .arg(io_connector->bus->butt[sn]);
     emit RefreshView(sn, s);
+}
+
+
+void controller::sendVariables()
+{
+    QString msg = "io_connector->vars";
+    for (int i = 0; i < VAR_COUNT; ++i) {
+        msg += QString("%1;")
+                .arg(io_connector->vars->vars.at(i));
+    }
+    sendDatagram(msg);
 }
 
 
 void controller::processPendingDatagrams()
 {
-    while (udpSocket->hasPendingDatagrams()) {
+    while (io_connector->udpSocket->hasPendingDatagrams()) {
         QByteArray datagram;
-        datagram.resize(udpSocket->pendingDatagramSize());
-        udpSocket->readDatagram(datagram.data(), datagram.size());
+        datagram.resize(io_connector->udpSocket->pendingDatagramSize());
+        io_connector->udpSocket->readDatagram(datagram.data(), datagram.size());
         QString data = QString(datagram);
         if (data[data.length()-1]!='\n') data[data.length()] = '\n';
                 emit toLog(data);
         if (data.contains("temp"))
         {
-            speakTerm(termo->temper);
+            speakTerm(io_connector->termo->temper);
         }
         else
         if (data.contains("time"))
         {
-            player->add("vremya.wav");
+            io_connector->player->add("vremya.wav");
             speakTime();
         }
         else
@@ -198,9 +229,16 @@ void controller::processPendingDatagrams()
 
         }
         else
-        if (data.contains("setbud"))
+        if (data.contains("getio_connector->vars"))
         {
-
+            sendVariables();
+        }
+        else
+        if (data.contains("setvar|"))
+        {
+            QStringList list = data.split("|");
+            if (list.size()==3)
+                io_connector->vars->changeValue(list[1].toInt(), list[2].toInt());
         }
         else
         // посылаем состояния всех галок, с большой буквы - чтоб не путалось с запросами от других клиентов
@@ -231,8 +269,8 @@ void controller::processPendingDatagrams()
 //        }
 //        else
         //qDebug()<<datagram.data();
-            bus->sendStr(data);
-            //bus->serial->write(data.toLatin1());
+            io_connector->bus->sendStr(data);
+            //io_connector->bus->serial->write(data.toLatin1());
     }
 }
 
@@ -240,22 +278,16 @@ void controller::processPendingDatagrams()
 void controller::sendDatagram(QString str)
 {
     QByteArray datagram = str.toLatin1();
-    udpSocket->writeDatagram(datagram.data(), datagram.size(),
+    io_connector->udpSocket->writeDatagram(datagram.data(), datagram.size(),
                                 QHostAddress("127.0.0.1"), PORT_SEND);
-    //udpSocket->writeDatagram(datagram.data(), datagram.size(),
+    //io_connector->udpSocket->writeDatagram(datagram.data(), datagram.size(),
    //                         QHostAddress::Broadcast, PORT_SEND);
 }
 
 
 controller::~controller()
 {
-    tem_thread.quit();
-    tem_thread.wait();
-    bus_thread.quit();
-    bus_thread.wait();
     link_thread.quit();
     link_thread.wait();
-    audio_thread.quit();
-    audio_thread.wait();
 }
 

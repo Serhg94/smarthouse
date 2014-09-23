@@ -2,14 +2,16 @@
 #define COMMAND_H
 
 #include <QObject>
-#include <rc_bus.h>
+#include <IOconnector.h>
 
 class Command : public QObject
 {
     Q_OBJECT
 public:
+    IOconnector * io_connector;
+
     explicit Command(QObject *parent = 0);
-    virtual int doCommand(rc_bus *bus);
+    virtual int doCommand();
 signals:
 
 public slots:

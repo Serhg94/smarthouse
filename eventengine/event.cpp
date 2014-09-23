@@ -6,10 +6,10 @@ Event::Event(QObject *parent) :
 
 }
 
-int Event::checkEvent(rc_bus *bus)
+int Event::checkEvent()
 {
     for (int i = 0; i < conditions.size(); ++i) {
-        if (conditions.at(i)->checkCondition(bus) != 1)
+        if (conditions.at(i)->checkCondition() != 1)
             return 0;
     }
     return 1;

@@ -10,9 +10,8 @@ class Linktimer : public QObject
 {
     Q_OBJECT
 public:
-    explicit Linktimer(rc_bus *b, QObject *parent = 0);
+    explicit Linktimer(QObject *parent = 0);
     QVector <Link*> links;
-    rc_bus *bus;
     QTimer *timer;
     QVector <QThread*> link_threads;
 signals:

@@ -2,14 +2,16 @@
 #define CONDITION_H
 
 #include <QObject>
-#include <rc_bus.h>
+#include <IOconnector.h>
 
 class Condition : public QObject
 {
     Q_OBJECT
 public:
+    IOconnector * io_connector;
+
     explicit Condition(QObject *parent = 0);
-    virtual int checkCondition(rc_bus *bus);
+    virtual int checkCondition();
 
 signals:
 

@@ -26,25 +26,24 @@ void Link::init()
 
 
 //экспериментально
-void Link::checkStart(rc_bus *bus)
+void Link::checkStart()
 {
-    _bus = bus;
     timer = new QTimer();
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(_checkLink()));
     timer->start(10);
 }
 void Link::_checkLink()
 {
-    checkLink(_bus);
+    checkLink();
 }
 //-----------------
 
-void Link::checkLink(rc_bus *bus)
+void Link::checkLink()
 {
     try
         {
         //if (!enabled&&do_after&&(event->checkEvent(bus)==1)&&!doing)
-        if (!enabled&&do_after&&(event->checkEvent(bus)==1))
+        if (!enabled&&do_after&&(event->checkEvent()==1))
         {
             do_after_timer->stop();
             do_after_timer->start(timeout);
@@ -53,13 +52,13 @@ void Link::checkLink(rc_bus *bus)
         }
         if (enabled&&do_after)
         {
-            action->doAction(bus);
+            action->doAction();
             enabled = false;
             //doing = false;
         }
 
 
-        if (!enabled&&once_check&&(event->checkEvent(bus)==1)&&!doing)
+        if (!enabled&&once_check&&(event->checkEvent()==1)&&!doing)
         {
             do_after_timer->start(timeout);
             //QTimer::singleShot(timeout,this, SLOT(enableLink()));
@@ -67,15 +66,15 @@ void Link::checkLink(rc_bus *bus)
         }
         if (enabled&&once_check)
         {
-            action->doAction(bus);
+            action->doAction();
             enabled = false;
             doing = false;
         }
 
 
-        if ((enabled&&(event->checkEvent(bus)==1)&&!do_after&&!once_check))
+        if ((enabled&&(event->checkEvent()==1)&&!do_after&&!once_check))
         {
-            action->doAction(bus);
+            action->doAction();
             enabled = false;
             do_after_timer->start(timeout);
             //QTimer::singleShot(timeout,this, SLOT(enableLink()));

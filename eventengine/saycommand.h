@@ -12,10 +12,7 @@ public:
     explicit sayCommand(QObject *parent = 0);
     // 1 - сказать время, 2 - сказать температуру
     short int type;
-
-    audiosteck *pl;
-    web_termometr *tem;
-    int doCommand(rc_bus *bus);
+    int doCommand();
 
 private:
     void speakTerm();

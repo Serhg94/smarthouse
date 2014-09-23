@@ -10,7 +10,7 @@ class Action : public QObject
 public:
     explicit Action(QObject *parent = 0);
     QVector <Command*> commands;
-    int doAction(rc_bus *bus);
+    int doAction();
 signals:
 
 public slots:

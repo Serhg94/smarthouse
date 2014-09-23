@@ -441,6 +441,7 @@ void SmtpClient::socketStateChanged(QAbstractSocket::SocketState state)
 
 void SmtpClient::socketError(QAbstractSocket::SocketError socketError)
 {
+    qDebug() << socketError;
 }
 
 void SmtpClient::socketReadyRead()

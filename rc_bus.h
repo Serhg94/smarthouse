@@ -25,6 +25,8 @@ public:
     QString portstr;
     QHostAddress ip;
 
+    bool _debug = false;
+
     explicit rc_bus(bool n = false, QObject *parent = 0);
     void run();
     int checkString(QString string, int from);

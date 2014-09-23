@@ -14,7 +14,7 @@ public:
     QTime time;
     explicit timeCondition(QObject *parent = 0);
     // 1 - выполняется, 0 - не выполняется, 6 - что то пошло не так.
-    int checkCondition(rc_bus *bus);
+    int checkCondition();
 signals:
 
 public slots:

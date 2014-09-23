@@ -6,7 +6,7 @@ dayCondition::dayCondition(QObject *parent) :
 }
 
 // 1 - выполняется, 0 - не выполняется, 6 - что то пошло не так.
-int dayCondition::checkCondition(rc_bus *bus)
+int dayCondition::checkCondition()
 {
     QDate cur = QDate::currentDate();
     switch(type)

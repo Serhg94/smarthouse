@@ -5,20 +5,21 @@ varCommand::varCommand(QObject *parent) :
 {
 }
 
-int varCommand::doCommand(rc_bus *bus)
+int varCommand::doCommand()
 {
-    //qDebug() << number << " - " << vars->vars.at(number) << " - " << value;
     switch(type)
     {
     case 1:
-        vars->changeValue(number, value);
+        io_connector->vars->changeValue(number, value);
         break;
     case 2:
-        vars->changeValue(number, vars->vars.at(number)+value);
+        io_connector->vars->changeValue(number, io_connector->vars->vars.at(number)+value);
         break;
     case 3:
-        vars->changeValue(number, vars->vars.at(number)-value);
+        io_connector->vars->changeValue(number, io_connector->vars->vars.at(number)-value);
         break;
     }
+    if (io_connector->bus->_debug)
+        qDebug() << " Variable number " << number << " = " << io_connector->vars->vars.at(number);
     return 1;
 }

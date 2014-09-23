@@ -2,11 +2,9 @@
 #define VARIABLES_H
 
 #include <QObject>
-#include <eventengine/condition.h>
-#include <eventengine/command.h>
 #include <QTime>
-
-#define VAR_COUNT 100
+#include <QVector>
+#include "config.h"
 
 class variables : public QObject
 {

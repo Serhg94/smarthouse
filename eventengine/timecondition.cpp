@@ -6,7 +6,7 @@ timeCondition::timeCondition(QObject *parent) :
 }
 
 // 1 - выполняется, 0 - не выполняется, 6 - что то пошло не так.
-int timeCondition::checkCondition(rc_bus *bus)
+int timeCondition::checkCondition()
 {
     QTime cur = QTime::currentTime();
     switch(type)

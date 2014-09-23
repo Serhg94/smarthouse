@@ -13,6 +13,7 @@ public:
     QTimer *maint;
     QProcess *page;
     int temper;
+    bool _debug = false;
 
 signals:
 
