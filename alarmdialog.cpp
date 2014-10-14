@@ -10,7 +10,7 @@ alarmDialog::alarmDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     loadSettings();
-    bud_timer = new QTimer(this);
+    bud_timer = new QTimer();
     QObject::connect(bud_timer, SIGNAL(timeout()), this, SLOT(bud_action()));
     bud_timer->start(BUD_SEC);
 }

@@ -9,22 +9,21 @@ IOconnector::IOconnector(QObject *parent) :
     udpSocket->bind(PORT_LISTEN, QUdpSocket::ShareAddress);
 
     termo = new web_termometr();
+    QObject::connect(&tem_thread, SIGNAL(started()), termo, SLOT(init()));
     termo->moveToThread(&tem_thread);
     tem_thread.start();
 
     player = new audiosteck();
+    QObject::connect(&audio_thread, SIGNAL(started()), player, SLOT(init()));
     player->moveToThread(&audio_thread);
     audio_thread.start();
 
     bus = new rc_bus(true);
+    QObject::connect(&bus_thread, SIGNAL(started()), bus, SLOT(init()));
     bus->moveToThread(&bus_thread);
     bus_thread.start();
 
     vars = new variables();
-
-    QObject::connect(&tem_thread, SIGNAL(started()), termo, SLOT(init()));
-    QObject::connect(&audio_thread, SIGNAL(started()), player, SLOT(init()));
-    QObject::connect(&bus_thread, SIGNAL(started()), bus, SLOT(init()));
 }
 
 IOconnector::~IOconnector()

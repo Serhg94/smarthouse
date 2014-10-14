@@ -3,7 +3,7 @@
 variables::variables(QObject *parent) :
     QObject(parent)
 {
-    for (int i = 0; i < VAR_COUNT; ++i) {
+    for (int i = 0; i < VAR_COUNT; i++) {
         vars.append(0);
     }
 }

@@ -17,7 +17,6 @@ public:
     bool do_after;
     bool once_check;
     int timeout;
-    void checkLink();
     void setDoAfter();
     void setDoAfterOnceCheck();
 
@@ -33,7 +32,7 @@ signals:
 public slots:
     void enableLink();
     void init();
-    void _checkLink();
+    void checkLink();
 
 };
 

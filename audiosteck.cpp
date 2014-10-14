@@ -3,7 +3,6 @@
 
 audiosteck::audiosteck(QWidget *parent)
 {
-
 }
 
 void audiosteck::init()

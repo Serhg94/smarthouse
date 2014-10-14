@@ -39,8 +39,8 @@ int main(int argc, char *argv[])
     QThread controlThread;
     controller control;
     control.moveToThread(&controlThread);
-    controlThread.start();
     QObject::connect(&controlThread, SIGNAL(started()), &control, SLOT(init()));
+    controlThread.start();
     MainWindow view(&a);
     QObject::connect(&view, SIGNAL(alarmWindowOpen()), &budil, SLOT(show()));
     QObject::connect(&budil, SIGNAL(Alarm(int,QString)), &control, SLOT(bud_action(int,QString)));

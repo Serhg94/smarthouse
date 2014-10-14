@@ -130,8 +130,8 @@ Command* parseCommand(QString str, IOconnector *conn)
         varCommand *cmd = new varCommand();
         int pos;
         if (str.indexOf("=")>-1) {pos = str.indexOf("="); cmd->type = 1;}
-        if (str.indexOf("+")>-1) {pos = str.indexOf("+"); cmd->type = 2;}
-        if (str.indexOf("-")>-1) {pos = str.indexOf("-"); cmd->type = 3;}
+        else if (str.indexOf("+")>-1) {pos = str.indexOf("+"); cmd->type = 2;}
+        else if (str.indexOf("-")>-1) {pos = str.indexOf("-"); cmd->type = 3;}
         cmd->number = (str.mid(4,pos-4)).toInt();
         cmd->value = (str.mid(pos+1).toInt());
         cmd->io_connector = conn;

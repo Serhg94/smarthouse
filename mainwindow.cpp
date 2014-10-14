@@ -9,7 +9,7 @@ MainWindow::MainWindow(QApplication *a, QWidget *parent) :
 {
     ui->setupUi(this);
     app = a;
-    maintain_timer = new QTimer(this);
+    maintain_timer = new QTimer();
     QObject::connect(maintain_timer, SIGNAL(timeout()), this, SLOT(maintain()));
     maintain_timer->start(MAINTAIN_MSEC);
     QObject::connect(ui->openButton, SIGNAL(clicked()), this, SLOT(portButt()));

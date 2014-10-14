@@ -15,12 +15,12 @@ Link::Link(QObject *parent) :
 
 void Link::init()
 {
-    do_after_timer = new QTimer(this);
+    do_after_timer = new QTimer();
     do_after_timer->setSingleShot(true);
     QObject::connect(do_after_timer, SIGNAL(timeout()), this, SLOT(enableLink()));
 
     timer = new QTimer();
-    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(_checkLink()));
+    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkLink()));
     timer->start(10);
 }
 
@@ -29,12 +29,8 @@ void Link::init()
 void Link::checkStart()
 {
     timer = new QTimer();
-    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(_checkLink()));
+    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkLink()));
     timer->start(10);
-}
-void Link::_checkLink()
-{
-    checkLink();
 }
 //-----------------
 

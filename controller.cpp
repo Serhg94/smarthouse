@@ -195,7 +195,7 @@ void controller::sendToView(int sn)
 
 void controller::sendVariables()
 {
-    QString msg = "io_connector->vars";
+    QString msg = "vars";
     for (int i = 0; i < VAR_COUNT; ++i) {
         msg += QString("%1;")
                 .arg(io_connector->vars->vars.at(i));
@@ -289,5 +289,6 @@ controller::~controller()
 {
     link_thread.quit();
     link_thread.wait();
+    io_connector->~IOconnector();
 }
 

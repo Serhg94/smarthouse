@@ -19,9 +19,9 @@ void Linktimer::startInManyThreads()
 {
     for (int i = 0; i < links.size(); ++i) {
         link_threads.append(new QThread());
+        QObject::connect(link_threads.at(i), SIGNAL(started()), links.at(i), SLOT(init()));
         links.at(i)->moveToThread(link_threads.at(i));
         link_threads.at(i)->start();
-        QObject::connect(link_threads.at(i), SIGNAL(started()), links.at(i), SLOT(init()));
         //links.at(i)->checkStart(bus);
     }
 }
