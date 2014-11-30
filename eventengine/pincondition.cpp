@@ -20,6 +20,7 @@ int pinCondition::pinState()
         {if (io_connector->bus->butt[mk][pin]=='1') return 1; else return 0;}
         break;
     }
+    return -1;
 }
 
 

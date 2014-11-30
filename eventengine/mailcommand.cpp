@@ -14,4 +14,5 @@ int mailCommand::doCommand()
     if (io_connector->bus->_debug)
         qDebug() << " Send mail " << server << sender << to << title << body;
     mail->start();
+    return 1;
 }

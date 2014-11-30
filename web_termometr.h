@@ -1,9 +1,9 @@
 #ifndef WEB_TERMOMETR_H
 #define WEB_TERMOMETR_H
 
-#include <QWidget>
 #include <QTimer>
-#include <QProcess>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 class web_termometr : public QObject
 {
@@ -11,17 +11,20 @@ class web_termometr : public QObject
 public:
     explicit web_termometr(QObject *parent = 0);
     QTimer *maint;
-    QProcess *page;
     int temper;
-    bool _debug = false;
+    bool _debug;
+
+private:
+    QNetworkAccessManager *m_WebCtrl;
 
 signals:
 
+private slots:
+    void fileDownloaded(QNetworkReply* pReply);
+    void update();
+
 public slots:
     void init();
-    void update();
-    void recive_temp();
-    void recive_temp(int t);
 
 };
 

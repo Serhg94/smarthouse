@@ -20,6 +20,7 @@ int sayCommand::doCommand()
             qDebug() << " Say temper = "<< io_connector->termo->temper;
         break;
     }
+    return 1;
 }
 
 void sayCommand::speakTerm()

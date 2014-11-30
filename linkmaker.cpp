@@ -30,6 +30,7 @@ Linktimer* makeLinksFromFile(QString name, IOconnector *conn)
         qDebug()<<" Ошибка разбора файла скриптов";
         QMessageBox::critical(NULL,QObject::tr("Ошибка"),QObject::tr("Ошибка разбора файла скриптов!"));
     }
+    return NULL;
 }
 
 Link* parseLink(QString str, IOconnector *conn)
@@ -128,15 +129,17 @@ Command* parseCommand(QString str, IOconnector *conn)
     if (str.mid(0,3).contains("var", Qt::CaseInsensitive))
     {
         varCommand *cmd = new varCommand();
-        int pos;
+        int pos = -1;
         if (str.indexOf("=")>-1) {pos = str.indexOf("="); cmd->type = 1;}
         else if (str.indexOf("+")>-1) {pos = str.indexOf("+"); cmd->type = 2;}
         else if (str.indexOf("-")>-1) {pos = str.indexOf("-"); cmd->type = 3;}
+        if (pos == -1) return NULL;
         cmd->number = (str.mid(4,pos-4)).toInt();
         cmd->value = (str.mid(pos+1).toInt());
         cmd->io_connector = conn;
         return cmd;
     }
+    return NULL;
 }
 
 Event* parseEvent(QString str, IOconnector *conn)
@@ -205,11 +208,12 @@ Condition* parseCondition(QString str, IOconnector *conn)
         if (str.mid(6,4)=="rebs") cmd->pintype = 2;
         if (str.mid(6,4)=="butt") cmd->pintype = 3;
         //qDebug() << cmd->pintype;
-        int pos;
+        int pos = -1;
         if (str.indexOf(">1")>-1) {pos = str.indexOf(">1"); cmd->type = 1;}
         if (str.indexOf(">0")>-1) {pos = str.indexOf(">0"); cmd->type = 2;}
         if (str.indexOf("=1")>-1) {pos = str.indexOf("=1"); cmd->type = 3;}
         if (str.indexOf("=0")>-1) {pos = str.indexOf("=0"); cmd->type = 4;}
+        if (pos == -1) return NULL;
         cmd->pin = (str.mid(11,pos-11)).toInt();
         //qDebug() << (str.mid(11,pos-11)).toInt();
         cmd->io_connector = conn;
@@ -279,11 +283,12 @@ Condition* parseCondition(QString str, IOconnector *conn)
     if (str.mid(0,3).contains("var", Qt::CaseInsensitive))
     {
         varCondition *cmd = new varCondition();
-        int pos;
+        int pos = -1;
         if (str.indexOf(">")>-1) {pos = str.indexOf(">"); cmd->type = 1;}
         if (str.indexOf("<")>-1) {pos = str.indexOf("<"); cmd->type = 2;}
         if (str.indexOf("=")>-1) {pos = str.indexOf("="); cmd->type = 3;}
         if (str.indexOf("!")>-1) {pos = str.indexOf("!"); cmd->type = 4;}
+        if (pos == -1) return NULL;
         cmd->number = (str.mid(4,pos-4)).toInt();
         cmd->value = (str.mid(pos+1).toInt());
         //qDebug() << cmd->value;
@@ -291,4 +296,5 @@ Condition* parseCondition(QString str, IOconnector *conn)
         cmd->io_connector = conn;
         return cmd;
     }
+    return NULL;
 }

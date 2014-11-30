@@ -6,6 +6,7 @@ rc_bus::rc_bus(bool n, QObject *parent) :
     QObject(parent)
 {
     net = n;
+    _debug = false;
 }
 
 void rc_bus::init()
