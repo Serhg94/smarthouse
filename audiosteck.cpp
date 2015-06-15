@@ -17,12 +17,16 @@ void audiosteck::update()
 {
     try
     {
+        mutex.lock();
         if ((!playlist.isEmpty())&&(player->state()==QMediaPlayer::StoppedState))
         {
-            player->setMedia(QUrl::fromLocalFile(playlist.first()));
-            player->play();
+            QString name = playlist.first();
             playlist.removeFirst();
+            mutex.unlock();
+            player->setMedia(QUrl::fromLocalFile(name));
+            player->play();
         }
+        else mutex.unlock();
     }
     catch(...)
     {
@@ -33,6 +37,8 @@ void audiosteck::update()
 
 void audiosteck::add(QString name)
 {
+    mutex.lock();
     if (playlist.size()>=50) playlist.clear();
     playlist << name;
+    mutex.unlock();
 }

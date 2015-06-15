@@ -33,7 +33,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 int main(int argc, char *argv[])
 {
-    qInstallMessageHandler(myMessageOutput);
+    //qInstallMessageHandler(myMessageOutput);
     QApplication a(argc, argv);
     alarmDialog budil;
     QThread controlThread;

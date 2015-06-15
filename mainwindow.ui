@@ -41,24 +41,11 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>320</x>
+      <x>140</x>
       <y>148</y>
-      <width>261</width>
+      <width>441</width>
       <height>251</height>
      </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>248</y>
-      <width>111</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Переоткрыть порт</string>
     </property>
    </widget>
    <widget class="QListWidget" name="listWidget">
@@ -89,79 +76,6 @@
      </size>
     </property>
    </widget>
-   <widget class="QGroupBox" name="groupBox">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>140</y>
-      <width>111</width>
-      <height>91</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Дневное время</string>
-    </property>
-    <widget class="QTimeEdit" name="dayTB">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>30</y>
-       <width>71</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="time">
-      <time>
-       <hour>7</hour>
-       <minute>0</minute>
-       <second>0</second>
-      </time>
-     </property>
-    </widget>
-    <widget class="QTimeEdit" name="dayTE">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>60</y>
-       <width>71</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="time">
-      <time>
-       <hour>23</hour>
-       <minute>0</minute>
-       <second>0</second>
-      </time>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>46</width>
-       <height>13</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>С:</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_2">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>46</width>
-       <height>13</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>По:</string>
-     </property>
-    </widget>
-   </widget>
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
@@ -178,9 +92,9 @@
    <widget class="QPushButton" name="alarmButton">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>20</x>
       <y>360</y>
-      <width>111</width>
+      <width>101</width>
       <height>41</height>
      </rect>
     </property>
@@ -191,9 +105,9 @@
    <widget class="QComboBox" name="portsBox">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>20</x>
       <y>308</y>
-      <width>111</width>
+      <width>101</width>
       <height>21</height>
      </rect>
     </property>
@@ -204,9 +118,9 @@
    <widget class="QPushButton" name="openButton">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>278</y>
-      <width>111</width>
+      <x>20</x>
+      <y>280</y>
+      <width>101</width>
       <height>23</height>
      </rect>
     </property>
@@ -217,10 +131,10 @@
    <widget class="QGroupBox" name="groupBox_2">
     <property name="geometry">
      <rect>
-      <x>130</x>
-      <y>330</y>
-      <width>181</width>
-      <height>71</height>
+      <x>20</x>
+      <y>150</y>
+      <width>91</width>
+      <height>81</height>
      </rect>
     </property>
     <property name="title">
@@ -229,9 +143,9 @@
     <widget class="QTimeEdit" name="restarttime">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>10</x>
        <y>20</y>
-       <width>91</width>
+       <width>71</width>
        <height>22</height>
       </rect>
      </property>
@@ -239,7 +153,7 @@
     <widget class="QCheckBox" name="restartbox">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>10</x>
        <y>50</y>
        <width>70</width>
        <height>17</height>
@@ -253,110 +167,6 @@
      </property>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="tools">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>140</y>
-      <width>181</width>
-      <height>181</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Функции</string>
-    </property>
-    <widget class="QCheckBox" name="sayinfoBox">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>101</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>говорить инфу</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="ddnigthBox">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>40</y>
-       <width>111</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>выкл. ДД ночью</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="dooralertBox">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>121</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>незакрытая дверь</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="lockalertBox">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>80</y>
-       <width>141</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>незакрытый замок</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="doorlightBox">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>100</y>
-       <width>161</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>свет при открытии двери</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="checkBox_6">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>130</y>
-       <width>70</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>CheckBox</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="checkBox_7">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>150</y>
-       <width>70</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>CheckBox</string>
-     </property>
-    </widget>
-   </widget>
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
@@ -367,7 +177,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>v.0.5.3</string>
+     <string>v.0.5.5</string>
     </property>
    </widget>
   </widget>

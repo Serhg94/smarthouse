@@ -13,16 +13,16 @@ int varCondition::checkCondition()
     switch(type)
     {
     case 1:
-        if (io_connector->vars->vars.at(number)>value) return 1; else return 0;
+        if (io_connector->vars->at(number)>value) return 1; else return 0;
         break;
     case 2:
-        if (io_connector->vars->vars.at(number)<value) return 1; else return 0;
+        if (io_connector->vars->at(number)<value) return 1; else return 0;
         break;
     case 3:
-        if (io_connector->vars->vars.at(number)==value) return 1; else return 0;
+        if (io_connector->vars->at(number)==value) return 1; else return 0;
         break;
     case 4:
-        if (io_connector->vars->vars.at(number)!=value) return 1; else return 0;
+        if (io_connector->vars->at(number)!=value) return 1; else return 0;
         break;
     }
     return 6;

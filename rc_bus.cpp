@@ -115,26 +115,30 @@ bool rc_bus::open_port(QString desport, QString nameport)
     catch(...)
     {
         qDebug() << " Port open FAIL!";
-        return false;
     }
+    return false;
 }
 
 
 void rc_bus::preset()
 {
+    read_mutex.lock();
     for(int i=0; i<10; i++)
     {
         sets[i] = "000000000000000";
         butt[i] = "0000";
         rebs[i] = "0000";
     }
+    read_mutex.unlock();
 }
 
 
 void rc_bus::sendCommand(int sn, QString string)
 {
     QString s = QString("0%1set%2") .arg(sn) .arg(string);
+    send_mutex.lock();
     send_buff.append(s);
+    send_mutex.unlock();
     //s[s.length()] = '\n';
     //serial->write(s.toLatin1());
 }
@@ -142,7 +146,9 @@ void rc_bus::sendCommand(int sn, QString string)
 
 void rc_bus::sendStr(QString string)
 {
+    send_mutex.lock();
     send_buff.append(string);
+    send_mutex.unlock();
     //string[string.length()] = '\n';
     //serial->write(string.toLatin1());
     //qDebug()<<string.toLatin1();
@@ -155,11 +161,18 @@ void rc_bus::send()
     {
         try
         {
-            if (send_buff.size()<1) return;
+            qDebug()<<"отправка";
+            send_mutex.lock();
+            if (send_buff.size()<1)
+            {
+                send_mutex.unlock();
+                return;
+            }
             QString string = send_buff.first();
             string[string.length()] = '\n';
-            serial->write(string.toLatin1());
             send_buff.pop_front();
+            send_mutex.unlock();
+            serial->write(string.toLatin1());
             emit sendedString(string);
         }
         catch(...)
@@ -170,13 +183,19 @@ void rc_bus::send()
     }
     else
     {
-        if (send_buff.size()<1) return;
+        send_mutex.lock();
+        if (send_buff.size()<1)
+        {
+            send_mutex.unlock();
+            return;
+        }
         QString string = send_buff.first();
         string[string.length()] = '\n';
         QByteArray datagram = string.toLatin1();
+        send_buff.pop_front();
+        send_mutex.unlock();
         udpSocket->writeDatagram(datagram.data(), datagram.size(),
                                     ip, PORT_SEND1);
-        send_buff.pop_front();
         emit sendedString(string);
     }
 }
@@ -185,10 +204,12 @@ void rc_bus::send()
 void rc_bus::changeState(int num_ctr, int num_set)
 {
     QString a("222222222222222");
+    read_mutex.lock();
     if (sets[num_ctr].at(num_set)=='1')
         a[num_set]='0';
     else
         a[num_set]='1';
+    read_mutex.unlock();
     sendCommand(num_ctr, a);
 }
 
@@ -205,7 +226,7 @@ int rc_bus::checkString(QString string, int from)
 void rc_bus::parseDataStr(QString string)
 {
     try
-    {
+    {qDebug()<<"Ошибка разбора входящей строки";
         bool change=false;
         //qDebug() << string;
         QString str(string);
@@ -213,56 +234,68 @@ void rc_bus::parseDataStr(QString string)
           int sn=checkString(str.mid(0,1), 0);
           if ((sn<=0)) return;
           //парсим массив настроек
+          read_mutex.lock();
           if (sets[sn]!=str.mid(2,15))
           {
                sets[sn]=str.mid(2,15);
                change=true;
           }
+          read_mutex.unlock();
           //парсим датчик дыма
           str=str.mid(18,str.length());
           int pos=str.indexOf('/');
           if (pos==-1) return;
+          read_mutex.lock();
           //if (abs(stat[sn][0]-str.mid(0,pos).toInt())>ACCURACY )
           {
             stat[sn][0]=checkString(str.mid(0,pos), 0); //Serial.print(stat[sn][0]);
           //  change=true;
           }
+          read_mutex.unlock();
           //парсим массив релейных кнопо
           str=str.mid(pos+1,str.length());
           pos=str.indexOf('/');
           if (pos==-1) return;
+          read_mutex.lock();
           if (rebs[sn]!=str.mid(0,4))
           {
             rebs[sn]=str.mid(0,4);
             change=true;
           }
+          read_mutex.unlock();
           //парсим температуру
           str=str.mid(5,str.length());
           pos=str.indexOf('/');
           if (pos==-1) return;
+          read_mutex.lock();
           if (stat[sn][1]!=checkString(str.mid(0,pos),0))
           {
             stat[sn][1]=checkString(str.mid(0,pos), 0);
             change=true;
           }
+          read_mutex.unlock();
           //парсим влажность
           str=str.mid(pos+1,str.length());
           pos=str.indexOf('/');
           if (pos==-1) return;
+          read_mutex.lock();
           if (stat[sn][2]!=checkString(str.mid(0,pos), 0))
           {
             stat[sn][2]=checkString(str.mid(0,pos), 0);
             change=true;
           }
+          read_mutex.unlock();
           //парсим массив кнопок
           str=str.mid(pos+1,str.length());
           pos=str.indexOf('/');
           if (pos==-1) return;
+          read_mutex.lock();
           if (butt[sn]!=str.mid(0,4))
           {
             butt[sn]=str.mid(0,4);
             change=true;
           }
+          read_mutex.unlock();
           str=str.mid(pos+3,str.length());
           if (str.length()-pos>10)
           {
@@ -270,6 +303,7 @@ void rc_bus::parseDataStr(QString string)
           }
           emit statsChanged(sn);
           if (change) emit statsChangedCheck(sn);
+          qDebug()<<"Ошибка разбора входящей строки";
     }
     catch(...)
     {

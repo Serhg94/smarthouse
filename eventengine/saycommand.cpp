@@ -17,7 +17,7 @@ int sayCommand::doCommand()
     case 2:
         speakTerm();
         if (io_connector->bus->_debug)
-            qDebug() << " Say temper = "<< io_connector->termo->temper;
+            qDebug() << " Say temper = "<< io_connector->termo->get_T();
         break;
     }
     return 1;
@@ -25,7 +25,7 @@ int sayCommand::doCommand()
 
 void sayCommand::speakTerm()
 {
-    int t = io_connector->termo->temper;
+    int t = io_connector->termo->get_T();
     if ((t >40)||(t<-40)) return;
     io_connector->player->add("/temper/temp.wav");
     QString s;  s = QString("/temper/%1.wav")

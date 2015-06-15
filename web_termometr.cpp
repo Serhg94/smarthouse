@@ -19,6 +19,14 @@ void web_termometr::init()
     update();
 }
 
+int web_termometr::get_T()
+{
+    mutex.lock();
+    int t = temper;
+    mutex.unlock();
+    return t;
+}
+
 void web_termometr::fileDownloaded(QNetworkReply* pReply)
 {
     try
@@ -35,7 +43,9 @@ void web_termometr::fileDownloaded(QNetworkReply* pReply)
             {
                 if (xml.name() == "temperature"){
                     xml.readNext();
+                    mutex.lock();
                     temper = xml.text().toInt();
+                    mutex.unlock();
                     break;
                 }
             }

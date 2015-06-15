@@ -13,13 +13,13 @@ int varCommand::doCommand()
         io_connector->vars->changeValue(number, value);
         break;
     case 2:
-        io_connector->vars->changeValue(number, io_connector->vars->vars.at(number)+value);
+        io_connector->vars->changeValue(number, io_connector->vars->at(number)+value);
         break;
     case 3:
-        io_connector->vars->changeValue(number, io_connector->vars->vars.at(number)-value);
+        io_connector->vars->changeValue(number, io_connector->vars->at(number)-value);
         break;
     }
     if (io_connector->bus->_debug)
-        qDebug() << " Variable number " << number << " = " << io_connector->vars->vars.at(number);
+        qDebug() << " Variable number " << number << " = " << io_connector->vars->at(number);
     return 1;
 }

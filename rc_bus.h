@@ -4,6 +4,7 @@
 #include <QtCore/QDebug>
 #include <QObject>
 #include <QVector>
+#include <QMutex>
 #include <QTimer>
 #include <QUdpSocket>
 #include <QtSerialPort/QSerialPort>
@@ -24,8 +25,8 @@ public:
     QString rebs[10];
     QString portstr;
     QHostAddress ip;
-
-    bool _debug;
+    QMutex read_mutex;
+    volatile bool _debug;
 
     explicit rc_bus(bool n = false, QObject *parent = 0);
     void run();
@@ -56,6 +57,7 @@ private slots:
     void send();
 
 private:
+    QMutex send_mutex;
     bool net;
     QString *buffer = NULL;
     QUdpSocket *udpSocket;

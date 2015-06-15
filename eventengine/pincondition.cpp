@@ -8,16 +8,21 @@ pinCondition::pinCondition(QObject *parent) :
 
 int pinCondition::pinState()
 {
+    io_connector->bus->read_mutex.lock();
+    QChar s = io_connector->bus->sets[mk][pin];
+    QChar r = io_connector->bus->rebs[mk][pin];
+    QChar b = io_connector->bus->butt[mk][pin];
+    io_connector->bus->read_mutex.unlock();
     switch(pintype)
     {
     case 1:
-        {if (io_connector->bus->sets[mk][pin]=='1') return 1; else return 0;}
+        {if (s=='1') return 1; else return 0;}
         break;
     case 2:
-        {if (io_connector->bus->rebs[mk][pin]=='1') return 1; else return 0;}
+        {if (r=='1') return 1; else return 0;}
         break;
     case 3:
-        {if (io_connector->bus->butt[mk][pin]=='1') return 1; else return 0;}
+        {if (b=='1') return 1; else return 0;}
         break;
     }
     return -1;
@@ -26,19 +31,24 @@ int pinCondition::pinState()
 
 void pinCondition::init()
 {
+    io_connector->bus->read_mutex.lock();
+    QChar s = io_connector->bus->sets[mk][pin];
+    QChar r = io_connector->bus->rebs[mk][pin];
+    QChar b = io_connector->bus->butt[mk][pin];
+    io_connector->bus->read_mutex.unlock();
     switch(pintype)
     {
     case 1:
         //if (oldState==-1)
-        {if (io_connector->bus->sets[mk][pin]=='1') oldState = 1; else oldState = 0;}
+        {if (s=='1') oldState = 1; else oldState = 0;}
         break;
     case 2:
         //if (oldState==-1)
-        {if (io_connector->bus->rebs[mk][pin]=='1') oldState = 1; else oldState = 0;}
+        {if (r=='1') oldState = 1; else oldState = 0;}
         break;
     case 3:
         //if (oldState==-1)
-        {if (io_connector->bus->butt[mk][pin]=='1') oldState = 1; else oldState = 0;}
+        {if (b=='1') oldState = 1; else oldState = 0;}
         break;
     }
 }

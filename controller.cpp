@@ -173,7 +173,7 @@ void controller::main_control()
 void controller::maintain()
 {
     QString s;  s = QString("temp%1;")
-            .arg(io_connector->termo->temper);
+            .arg(io_connector->termo->get_T());
     sendDatagram(s);
 
 }
@@ -181,6 +181,7 @@ void controller::maintain()
 
 void controller::sendToView(int sn)
 {
+    io_connector->bus->read_mutex.lock();
     QString s;  s = QString("S/N:0%1; SETS:%2; GAS:%3; REB:%4; TEM:%5; HUM:%6; BUT:%7;")
             .arg(sn)
             .arg(io_connector->bus->sets[sn])
@@ -189,6 +190,7 @@ void controller::sendToView(int sn)
             .arg(io_connector->bus->stat[sn][1])
             .arg(io_connector->bus->stat[sn][2])
             .arg(io_connector->bus->butt[sn]);
+    io_connector->bus->read_mutex.unlock();
     emit RefreshView(sn, s);
 }
 
@@ -198,7 +200,7 @@ void controller::sendVariables()
     QString msg = "vars";
     for (int i = 0; i < VAR_COUNT; ++i) {
         msg += QString("%1;")
-                .arg(io_connector->vars->vars.at(i));
+                .arg(io_connector->vars->at(i));
     }
     sendDatagram(msg);
 }
@@ -215,7 +217,7 @@ void controller::processPendingDatagrams()
                 emit toLog(data);
         if (data.contains("temp"))
         {
-            speakTerm(io_connector->termo->temper);
+            speakTerm(io_connector->termo->get_T());
         }
         else
         if (data.contains("time"))

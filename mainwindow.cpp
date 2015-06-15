@@ -68,30 +68,16 @@ void MainWindow::alarmButt()
 void MainWindow::saveSettings()
 {
     QSettings configs("SerhgSoft", "SmartHouse");
-    configs.setValue("dattimeB", ui->dayTB->time());
-    configs.setValue("dattimeE", ui->dayTE->time());
     configs.setValue("reboottime", ui->restarttime->time());
     configs.setValue("rebootena", ui->restartbox->isChecked());
-    configs.setValue("sayinfoena", ui->sayinfoBox->isChecked());
-    configs.setValue("ddnigthena", ui->ddnigthBox->isChecked());
-    configs.setValue("dooralertena", ui->dooralertBox->isChecked());
-    configs.setValue("lockalertena", ui->lockalertBox->isChecked());
-    configs.setValue("doorlightena", ui->doorlightBox->isChecked());
 }
 
 
 void MainWindow::loadSettings()
 {
     QSettings configs("SerhgSoft", "SmartHouse");
-    ui->dayTB->setTime(configs.value("dattimeB").toTime());
-    ui->dayTE->setTime(configs.value("dattimeE").toTime());
     ui->restarttime->setTime(configs.value("reboottime").toTime());
     ui->restartbox->setChecked(configs.value("rebootena").toBool());
-    ui->sayinfoBox->setChecked(configs.value("sayinfoena").toBool());
-    ui->ddnigthBox->setChecked(configs.value("ddnigthena").toBool());
-    ui->dooralertBox->setChecked(configs.value("dooralertena").toBool());
-    ui->lockalertBox->setChecked(configs.value("lockalertena").toBool());
-    ui->doorlightBox->setChecked(configs.value("doorlightena").toBool());
 }
 
 
