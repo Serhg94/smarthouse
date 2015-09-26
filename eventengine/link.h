@@ -19,7 +19,7 @@ public:
     int timeout;
     void setDoAfter();
     void setDoAfterOnceCheck();
-
+int count = 0;
     void checkStart();
     QTimer *timer;
 

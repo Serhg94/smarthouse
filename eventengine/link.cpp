@@ -19,9 +19,9 @@ void Link::init()
     do_after_timer->setSingleShot(true);
     QObject::connect(do_after_timer, SIGNAL(timeout()), this, SLOT(enableLink()));
 
-    timer = new QTimer();
-    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkLink()));
-    timer->start(10);
+    //timer = new QTimer();
+    //QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkLink()));
+    //timer->start(10);
 }
 
 
@@ -36,6 +36,8 @@ void Link::checkStart()
 
 void Link::checkLink()
 {
+    qDebug() << count;
+
     try
         {
         //if (!enabled&&do_after&&(event->checkEvent(bus)==1)&&!doing)
@@ -48,8 +50,8 @@ void Link::checkLink()
         }
         if (enabled&&do_after)
         {
-            action->doAction();
             enabled = false;
+            action->doAction();
             //doing = false;
         }
 
@@ -62,17 +64,17 @@ void Link::checkLink()
         }
         if (enabled&&once_check)
         {
-            action->doAction();
             enabled = false;
             doing = false;
+            action->doAction();
         }
 
 
         if ((enabled&&(event->checkEvent()==1)&&!do_after&&!once_check))
         {
-            action->doAction();
             enabled = false;
             do_after_timer->start(timeout);
+            action->doAction();
             //QTimer::singleShot(timeout,this, SLOT(enableLink()));
             return;
         }
@@ -82,6 +84,8 @@ void Link::checkLink()
     {
         qDebug()<<" Ошибка проверки условий";
     }
+    qDebug() << count;
+    count++;
 }
 
 void Link::setDoAfter()

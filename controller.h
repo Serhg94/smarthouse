@@ -22,6 +22,7 @@ class controller : public QObject
     Q_OBJECT
 private:
     QThread link_thread;
+    int many_thread;
 
 public:
     IOconnector *io_connector;

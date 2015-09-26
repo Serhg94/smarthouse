@@ -226,7 +226,7 @@ int rc_bus::checkString(QString string, int from)
 void rc_bus::parseDataStr(QString string)
 {
     try
-    {qDebug()<<"Ошибка разбора входящей строки";
+    {
         bool change=false;
         //qDebug() << string;
         QString str(string);
@@ -302,8 +302,11 @@ void rc_bus::parseDataStr(QString string)
               parseDataStr(str);
           }
           emit statsChanged(sn);
-          if (change) emit statsChangedCheck(sn);
-          qDebug()<<"Ошибка разбора входящей строки";
+          if (change)
+          {
+              //read_mutex.tryLock();
+              emit statsChangedCheck(sn);
+          }
     }
     catch(...)
     {

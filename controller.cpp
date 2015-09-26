@@ -20,6 +20,7 @@ void controller::init()
     QObject::connect(io_connector->vars, SIGNAL(valueChanged(int,int)), this, SLOT(sendVariables()));
     // подключение CELAC
     linkengine = makeLinksFromFile("scripts.txt", io_connector);
+    many_thread = 0;
     //if (linkengine->links.size()<30)
     //{
         //linkengine->moveToThread(&link_thread);
@@ -28,10 +29,24 @@ void controller::init()
         //linkengine->startInOneThread();
     //}
     //else
-        linkengine->startInManyThreads();
+        //linkengine->startInManyThreads();
 
     readConfig("config.ini");
     QObject::connect(this, SIGNAL(toLog(QString)), this, SLOT(_debugInfo(QString)));
+
+    if (this->many_thread==1)
+    {
+        linkengine->startInManyThreads();
+        qDebug() << " Обработка линков в разных потоках";
+    }
+    else
+    {
+        //linkengine->moveToThread(&link_thread);
+        //link_thread.start();
+        //QObject::connect(&link_thread, SIGNAL(started()), linkengine, SLOT(startInOneThread()));
+        linkengine->startInOneThread();
+        qDebug() << " Обработка линков в одном потоке";
+    }
 
     up_timer = new QTimer();
     QObject::connect(up_timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -71,6 +86,11 @@ void controller::readConfig(QString name)
                         if (list[1].contains("1")){
                             io_connector->bus->_debug = true;
                             io_connector->termo->_debug = true;
+                        }
+                    }
+                    if (list[0].contains("multithreading")){
+                        if (list[1].contains("1")){
+                            this->many_thread = 1;
                         }
                     }
                     else if (list[0].contains("var")){
@@ -202,6 +222,7 @@ void controller::sendVariables()
         msg += QString("%1;")
                 .arg(io_connector->vars->at(i));
     }
+    emit toLog(msg);
     sendDatagram(msg);
 }
 

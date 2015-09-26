@@ -98,3 +98,4 @@ FORMS    += mainwindow.ui \
     alarmdialog.ui
 
 RESOURCES +=
+DEFINES += QT_MESSAGELOGCONTEXT

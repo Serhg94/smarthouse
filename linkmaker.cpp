@@ -6,7 +6,7 @@ Linktimer* makeLinksFromFile(QString name, IOconnector *conn)
     try
     {
         QFile file(name);
-        Linktimer *lt = new Linktimer();
+        Linktimer *lt = new Linktimer(conn);
         if (!file.open(QIODevice::ReadOnly)) // Проверяем, возможно ли открыть наш файл для чтения
             return lt; // если это сделать невозможно, то завершаем функцию
         char buf[2048];

@@ -11,10 +11,10 @@ class variables : public QObject
 {
     Q_OBJECT
 private:
-    QMutex mutex;
     QVector <int> vars;
 
 public:
+    QMutex mutex;
     explicit variables(QObject *parent = 0);
     void changeValue(int num, int val);
     int at(int num);
