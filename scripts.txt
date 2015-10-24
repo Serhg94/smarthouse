@@ -1,3 +1,75 @@
-if(time>12.30)(day=2)(pin.3.sets.3>1)(analog.3<400)then(send.It's Work!)(saytemp)(saytime)(mail|server|seder|toto|title|body);timeout=5000
-
-if(time>12.30)(day=2)then(send.It's Work2!);timeout=5000
+﻿//pin.3.butt.0 - дверь
+//pin.3.butt.3 - замок 
+//pin.3.rebs.3 - дд прихожей
+//pin.3.sets.11 - дергалка замка
+//pin.6.butt.1 - геркон туалета
+//pin.6.rebs.3 - дд туалета
+//pin.6.sets.3 - свет туалет
+//pin.6.sets.10 - вентилляция туалета
+//pin.6.sets.0 - свет кухня
+//pin.6.sets.1 - свет ванная
+//pin.6.sets.2 - слив
+//pin.2.sets.2 - открыть жалюзи в маленькой комнате
+//pin.2.sets.3 - закрыть жалюзи
+//pin.2.sets.0 - люстра в м.к.
+//pin.2.sets.1 - лампа в м.к.
+//
+//
+//
+//автозакрытие замка
+if(var.2>0)then(var.2-1);timeout=1000
+if(pin.3.butt.0=0)(pin.3.butt.3=1)(var.2=0)then(send.03set222222222221)(var.2=-1);timeout=5000
+if(pin.3.butt.0>1)then(var.2=1800);timeout=100
+if(pin.3.butt.3>1)then(var.2=1800);timeout=100
+if(pin.3.butt.3=0)(var.2!-1)then(var.2=-1);oncecheck_timeout=300
+if(pin.3.rebs.3>1)then(var.2=1800);timeout=100
+//
+//
+//
+//
+//
+//
+//
+//выключение релюшек жалюзей
+//if(pin.2.sets.12>1)then(send.02set2222222222220);doafter_timeout=10000
+//if(pin.2.sets.3=0)(pin.2.sets.12=0)then(send.02set2221);oncecheck_timeout=150
+//if(pin.2.sets.2=0)(pin.2.sets.12=0)then(send.02set2212);oncecheck_timeout=150
+//
+//включение света при открытой двери
+//if(pin.3.butt.0>1)then(send.03set2221);timeout=100
+//if(pin.3.butt.0=1)then(send.03set2220);doafter_timeout=45000
+//
+//if(var.3>0)then(var.3-1);timeout=1000
+//if(var.3=0)then(send.06set22202222220)(var.3=-1);timeout=5000
+//if(pin.6.rebs.3>1)then(var.3=240)(send.06set22212222221);timeout=10
+//if(pin.6.butt.1>1)then(var.3=240)(send.06set22212222221);timeout=10
+//
+//выключение дергалки 
+//if(pin.6.sets.2=1)then(send.06set2202);oncecheck_timeout=500
+//
+//событие протечки
+//if(pin.6.butt.2>0)then(mail|127.0.0.1|stats@cyber-labs.ru|stats@cyber-labs.ru|Wather_in_toilet!|Wather_in_toilet!);timeout=500
+//событие открытия двери
+//if(pin.3.butt.0>1)then(mail|127.0.0.1|stats@cyber-labs.ru|stats@cyber-labs.ru|Door_is_open|Door_is_open);timeout=500
+//событие закрытия двери
+//if(pin.3.butt.0>0)then(mail|127.0.0.1|stats@cyber-labs.ru|stats@cyber-labs.ru|Door_is_close|Door_is_close);timeout=500
+//
+//выключение дд в прихожей ночью
+//if(time>6.00)(analog.5>84)(pin.3.sets.9=0)then(send.03set2222222221);timeout=60000
+//if(time>6.00)(analog.5<78)(pin.3.sets.9=1)then(send.03set2222222220);timeout=60000
+//if(time<6.00)(pin.3.sets.9=1)then(send.03set2222222220);timeout=5000
+//
+//дергание замка обратно
+//if(pin.3.sets.11=1)then(send.03set222222222220);oncecheck_timeout=300
+//
+//говорить время и температуру 
+//if(pin.3.butt.0>1)then(saytime)(saytemp);timeout=1800000
+//
+//закрытие замка после трех секунд после закрытия двери)
+//if(pin.3.butt.0>0)then(var.10=6);timeout=1
+//if(var.10>-1)then(var.10-1);oncecheck_timeout=1000
+//if(pin.3.butt.0=0)(pin.3.butt.3=1)(var.10=0)then(var.10=-1)(send.03set222222222221);timeout=5000
+//будильники
+//if(day!6)(day!7)(time=6.30)then(play|bud.wav)(saytime)(send.01set1222);timeout=31000
+//if(day!6)(day!7)(time=6.40)then(play|bud.wav)(saytime)(send.01set1222);timeout=31000
+//if(day!6)(day!7)(time=6.50)then(play|bud.wav)(saytime)(send.01set1222);timeout=31000

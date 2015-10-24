@@ -1,6 +1,7 @@
 #include "controller.h"
-#include <QStringListModel>
-
+//#include <QStringListModel>
+#include "linkmaker.h"
+#include "linkmakerdb.h"
 
 
 controller::controller(QObject *parent) :
@@ -19,25 +20,21 @@ void controller::init()
     QObject::connect(io_connector->bus, SIGNAL(statsChanged(int)), this, SLOT(sendToView(int)));
     QObject::connect(io_connector->vars, SIGNAL(valueChanged(int,int)), this, SLOT(sendVariables()));
     // подключение CELAC
-    linkengine = makeLinksFromFile("scripts.txt", io_connector);
+    linkengine = new Linktimer(io_connector);
     many_thread = 0;
-    //if (linkengine->links.size()<30)
-    //{
-        //linkengine->moveToThread(&link_thread);
-        //link_thread.start();
-        //QObject::connect(&link_thread, SIGNAL(started()), linkengine, SLOT(startInOneThread()));
-        //linkengine->startInOneThread();
-    //}
-    //else
-        //linkengine->startInManyThreads();
 
-    readConfig("config.ini");
+    bool db = false;
+    readConfig("config.ini", &db);
+    io_connector->sql_db->initDB();
+    if (db)
+        //io_connector->sql_db->makeLinksTableFromDB();
+        makeLinksFromDB(io_connector, linkengine);
     QObject::connect(this, SIGNAL(toLog(QString)), this, SLOT(_debugInfo(QString)));
 
     if (this->many_thread==1)
     {
         linkengine->startInManyThreads();
-        qDebug() << " Обработка линков в разных потоках";
+        qDebug() << " Link engine started in many thread";
     }
     else
     {
@@ -45,7 +42,7 @@ void controller::init()
         //link_thread.start();
         //QObject::connect(&link_thread, SIGNAL(started()), linkengine, SLOT(startInOneThread()));
         linkengine->startInOneThread();
-        qDebug() << " Обработка линков в одном потоке";
+        qDebug() << " Link engine started in one thread";
     }
 
     up_timer = new QTimer();
@@ -63,7 +60,7 @@ void controller::init()
 }
 
 
-void controller::readConfig(QString name)
+void controller::readConfig(QString name, bool *links_from_db)
 {
     try
     {
@@ -93,7 +90,33 @@ void controller::readConfig(QString name)
                             this->many_thread = 1;
                         }
                     }
-                    else if (list[0].contains("var")){
+                    if (list[0].contains("links_from_db")){
+                        if (list[1].contains("1")){
+                            *links_from_db = true;
+                        }
+                    }
+                    if (list[0].contains("db_addr")){
+                        io_connector->sql_db->addr = list[1].simplified();
+                    }
+                    if (list[0].contains("db_type")){
+                        io_connector->sql_db->db_type = list[1].simplified();
+                    }
+                    if (list[0].contains("db_login")){
+                        io_connector->sql_db->login = list[1].simplified();
+                    }
+                    if (list[0].contains("db_password")){
+                        io_connector->sql_db->pass = list[1].simplified();
+                    }
+                    if (list[0].contains("db_port")){
+                        io_connector->sql_db->port = list[1].toInt();
+                    }
+                    if (list[0].contains("db_name")){
+                        io_connector->sql_db->db_name = list[1].simplified();
+                    }
+                    if (list[0].contains("links_from_file")){
+                        makeLinksFromFile(list[1].simplified(), io_connector, linkengine);
+                    }
+                    if (list[0].contains("var")){
                         int num = list[0].mid(str.indexOf("[")+1,
                                               str.indexOf("]")-str.indexOf("[")-1).toInt();
                         io_connector->vars->changeValue(num, list[1].toInt());

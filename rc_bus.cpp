@@ -1,4 +1,4 @@
-#include <QMessageBox>
+//#include <QMessageBox>
 #include <QTime>
 #include "rc_bus.h"
 
@@ -38,7 +38,7 @@ void rc_bus::init()
         catch(...)
         {
             qDebug() << " Port open FAIL!";
-            QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка инициализации шины"));
+//            QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка инициализации шины"));
         }
     }
     qDebug()<<" Порт открыт";
@@ -105,7 +105,7 @@ bool rc_bus::open_port(QString desport, QString nameport)
             }
            if (!serial->isOpen())
            {
-               QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Не могу открыть порт! Ошибка:")+serial->errorString());
+//               QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Не могу открыть порт! Ошибка:")+serial->errorString());
                return false;
            }
            else portstr = serial->portName();
@@ -125,9 +125,9 @@ void rc_bus::preset()
     read_mutex.lock();
     for(int i=0; i<10; i++)
     {
-        sets[i] = "000000000000000";
-        butt[i] = "0000";
-        rebs[i] = "0000";
+        sets[i] = "666666666666666";
+        butt[i] = "6666";
+        rebs[i] = "6666";
     }
     read_mutex.unlock();
 }
@@ -252,7 +252,7 @@ void rc_bus::parseDataStr(QString string)
           //  change=true;
           }
           read_mutex.unlock();
-          //парсим массив релейных кнопо
+          //парсим массив релейных кнопок
           str=str.mid(pos+1,str.length());
           pos=str.indexOf('/');
           if (pos==-1) return;

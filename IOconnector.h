@@ -6,6 +6,7 @@
 #include <QUdpSocket>
 #include "rc_bus.h"
 #include "audiosteck.h"
+#include "sql_worker.h"
 #include "web_termometr.h"
 #include <eventengine/variables/variables.h>
 #include "config.h"
@@ -20,12 +21,14 @@ public:
     variables *vars;
     audiosteck *player;
     web_termometr *termo;
+    sql_worker *sql_db;
     explicit IOconnector(QObject *parent = 0);
     ~IOconnector();
 private:
     QThread bus_thread;
     QThread audio_thread;
     QThread tem_thread;
+    QThread sql_thread;
 
 signals:
 

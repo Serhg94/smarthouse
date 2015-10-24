@@ -11,6 +11,9 @@ Link::Link(QObject *parent) :
     do_after = false;
     once_check = false;
     doing = false;
+    event_gen_onstart = false;
+    event_gen_onend = false;
+    idlink = -1;
 }
 
 void Link::init()
@@ -34,10 +37,15 @@ void Link::checkStart()
 }
 //-----------------
 
+void Link::sendEvent()
+{
+    QString s;  s = QString("INSERT INTO `smarthouse`.`events` (`time`, `description`, `link_idlink`) VALUES ('%1', '%2', '%3')")
+            .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")).arg(description).arg(idlink);
+    io_connector->sql_db->addNonAnswerRequest(s);
+}
+
 void Link::checkLink()
 {
-    qDebug() << count;
-
     try
         {
         //if (!enabled&&do_after&&(event->checkEvent(bus)==1)&&!doing)
@@ -45,6 +53,8 @@ void Link::checkLink()
         {
             do_after_timer->stop();
             do_after_timer->start(timeout);
+            if (event_gen_onstart)
+                sendEvent();
             //QTimer::singleShot(timeout,this, SLOT(enableLink()));
             //doing = true;
         }
@@ -52,6 +62,8 @@ void Link::checkLink()
         {
             enabled = false;
             action->doAction();
+            if (event_gen_onend)
+                sendEvent();
             //doing = false;
         }
 
@@ -59,6 +71,8 @@ void Link::checkLink()
         if (!enabled&&once_check&&(event->checkEvent()==1)&&!doing)
         {
             do_after_timer->start(timeout);
+            if (event_gen_onstart)
+                sendEvent();
             //QTimer::singleShot(timeout,this, SLOT(enableLink()));
             doing = true;
         }
@@ -67,6 +81,8 @@ void Link::checkLink()
             enabled = false;
             doing = false;
             action->doAction();
+            if (event_gen_onend)
+                sendEvent();
         }
 
 
@@ -75,6 +91,8 @@ void Link::checkLink()
             enabled = false;
             do_after_timer->start(timeout);
             action->doAction();
+            if (event_gen_onend)
+                sendEvent();
             //QTimer::singleShot(timeout,this, SLOT(enableLink()));
             return;
         }
@@ -84,8 +102,6 @@ void Link::checkLink()
     {
         qDebug()<<" Ошибка проверки условий";
     }
-    qDebug() << count;
-    count++;
 }
 
 void Link::setDoAfter()

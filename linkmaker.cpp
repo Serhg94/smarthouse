@@ -1,14 +1,14 @@
 #include "linkmaker.h"
-#include <QMessageBox>
+//#include <QMessageBox>
 
-Linktimer* makeLinksFromFile(QString name, IOconnector *conn)
+int makeLinksFromFile(QString name, IOconnector *conn, Linktimer *lt)
 {
     try
     {
         QFile file(name);
-        Linktimer *lt = new Linktimer(conn);
+        //Linktimer *lt = new Linktimer(conn);
         if (!file.open(QIODevice::ReadOnly)) // Проверяем, возможно ли открыть наш файл для чтения
-            return lt; // если это сделать невозможно, то завершаем функцию
+            return 0; // если это сделать невозможно, то завершаем функцию
         char buf[2048];
         qint64 lineLength = file.readLine(buf, sizeof(buf));
         while(lineLength != -1)
@@ -23,14 +23,14 @@ Linktimer* makeLinksFromFile(QString name, IOconnector *conn)
             lineLength = file.readLine(buf, sizeof(buf));
         }
         qDebug()<<" Скрипты загружены";
-        return lt;
+        return 1;
     }
     catch(...)
     {
         qDebug()<<" Ошибка разбора файла скриптов";
-        QMessageBox::critical(NULL,QObject::tr("Ошибка"),QObject::tr("Ошибка разбора файла скриптов!"));
+//        QMessageBox::critical(NULL,QObject::tr("Ошибка"),QObject::tr("Ошибка разбора файла скриптов!"));
     }
-    return NULL;
+    return 0;
 }
 
 Link* parseLink(QString str, IOconnector *conn)
@@ -84,6 +84,16 @@ Command* parseCommand(QString str, IOconnector *conn)
         return cmd;
     }
     else
+    if (str.mid(0,3).contains("say", Qt::CaseInsensitive))
+    {
+        sayCommand *cmd = new sayCommand();
+        cmd->speech = str.mid(str.indexOf("|")+1);
+        cmd->type = 3;
+        //qDebug() << cmd->file;
+        cmd->io_connector = conn;
+        return cmd;
+    }
+    else
     if (str.mid(0,4).contains("play", Qt::CaseInsensitive))
     {
         playCommand *cmd = new playCommand();
@@ -97,6 +107,15 @@ Command* parseCommand(QString str, IOconnector *conn)
     {
         busCommand *cmd = new busCommand();
         cmd->comm = str.mid(str.indexOf(".")+1);
+        //qDebug() << cmd->comm;
+        cmd->io_connector = conn;
+        return cmd;
+    }
+    else
+    if (str.mid(0,3).contains("sql", Qt::CaseInsensitive))
+    {
+        sqlCommand *cmd = new sqlCommand();
+        cmd->request = str.mid(str.indexOf("|")+1);
         //qDebug() << cmd->comm;
         cmd->io_connector = conn;
         return cmd;

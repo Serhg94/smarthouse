@@ -21,6 +21,7 @@
 #include <eventengine/action.h>
 #include <eventengine/command.h>
 #include <eventengine/buscommand.h>
+#include <eventengine/sqlcommand.h>
 #include <eventengine/saycommand.h>
 #include <eventengine/playcommand.h>
 #include <eventengine/mailcommand.h>

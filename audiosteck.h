@@ -17,11 +17,14 @@ private:
     QTimer *maint;
     QMediaPlayer *player;
     QVector <QString> playlist;
+    QVector <QString> speechlist;
     QMutex mutex;
+    QMutex mutex2;
 signals:
 
 public slots:
     void add(QString name);
+    void addSpeech(QString name);
     void update();
     void init();
 

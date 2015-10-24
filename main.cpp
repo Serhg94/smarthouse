@@ -1,11 +1,11 @@
-#include <QApplication>
+#include <QCoreApplication>
 #include <stdio.h>
 #include <stdlib.h>
 #include <QDebug>
 #include <QtMsgHandler>
 
-#include "mainwindow.h"
-#include "alarmdialog.h"
+//#include "mainwindow.h"
+//#include "alarmdialog.h"
 #include "controller.h"
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -34,20 +34,21 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 int main(int argc, char *argv[])
 {
     //qInstallMessageHandler(myMessageOutput);
-    QApplication a(argc, argv);
-    alarmDialog budil;
-    QThread controlThread;
+    QCoreApplication a(argc, argv);
+//    alarmDialog budil;
+//    QThread controlThread;
     controller control;
-    control.moveToThread(&controlThread);
-    QObject::connect(&controlThread, SIGNAL(started()), &control, SLOT(init()));
-    controlThread.start();
-    MainWindow view(&a);
-    QObject::connect(&view, SIGNAL(alarmWindowOpen()), &budil, SLOT(show()));
-    QObject::connect(&budil, SIGNAL(Alarm(int,QString)), &control, SLOT(bud_action(int,QString)));
-    QObject::connect(&view, SIGNAL(openPort(QString)), &control, SLOT(openPort(QString)));
-    QObject::connect(&control, SIGNAL(toLog(QString)), &view, SLOT(appendStr(QString)));
-    QObject::connect(&control, SIGNAL(RefreshView(int,QString)), &view, SLOT(RefreshView(int,QString)));
-    QObject::connect(&a, SIGNAL(aboutToQuit()), &controlThread, SLOT(quit()));
-    view.show();
+    control.init();
+//    control.moveToThread(&controlThread);
+//    QObject::connect(&controlThread, SIGNAL(started()), &control, SLOT(init()));
+//    controlThread.start();
+//    MainWindow view(&a);
+//    QObject::connect(&view, SIGNAL(alarmWindowOpen()), &budil, SLOT(show()));
+//    QObject::connect(&budil, SIGNAL(Alarm(int,QString)), &control, SLOT(bud_action(int,QString)));
+//    QObject::connect(&view, SIGNAL(openPort(QString)), &control, SLOT(openPort(QString)));
+//    QObject::connect(&control, SIGNAL(toLog(QString)), &view, SLOT(appendStr(QString)));
+//    QObject::connect(&control, SIGNAL(RefreshView(int,QString)), &view, SLOT(RefreshView(int,QString)));
+//    QObject::connect(&a, SIGNAL(aboutToQuit()), &controlThread, SLOT(quit()));
+//    view.show();
     return a.exec();
 }

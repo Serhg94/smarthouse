@@ -4,19 +4,21 @@
 #
 #-------------------------------------------------
 
-QT       += core gui serialport network multimedia
+QT       += core serialport network multimedia sql
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       -= gui
+#greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = SmartHouse
 TEMPLATE = app
 
+CONFIG += console
+CONFIG -= app_bundle
+
 #CONFIG += release
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
     rc_bus.cpp \
-    alarmdialog.cpp \
     audiosteck.cpp \
     mail/emailaddress.cpp \
     mail/mimeattachment.cpp \
@@ -50,11 +52,13 @@ SOURCES += main.cpp\
     controller.cpp \
     eventengine/variables/varcondition.cpp \
     eventengine/variables/varcommand.cpp \
-    IOconnector.cpp
+    IOconnector.cpp \
+    sql_worker.cpp \
+    linkmakerdb.cpp \
+    eventengine/sqlcommand.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS  += \
     rc_bus.h \
-    alarmdialog.h \
     audiosteck.h \
     mail/emailaddress.h \
     mail/mimeattachment.h \
@@ -92,10 +96,13 @@ HEADERS  += mainwindow.h \
     eventengine/variables/varcondition.h \
     eventengine/variables/varcommand.h \
     IOconnector.h \
-    config.h
+    config.h \
+    sql_worker.h \
+    linkmakerdb.h \
+    eventengine/sqlcommand.h
 
-FORMS    += mainwindow.ui \
-    alarmdialog.ui
+#FORMS    += mainwindow.ui \
+#    alarmdialog.ui
 
 RESOURCES +=
 DEFINES += QT_MESSAGELOGCONTEXT

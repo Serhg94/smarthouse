@@ -8,7 +8,7 @@
 
 // парсер файла скриптов, создает связи Conditions-Event-Link-Action-Commands
 
-Linktimer* makeLinksFromFile(QString name, IOconnector *conn);
+int makeLinksFromFile(QString name, IOconnector *conn, Linktimer *lt);
 Link* parseLink(QString str, IOconnector *conn);
 Action* parseAction(QString str, IOconnector *conn);
 Event* parseEvent(QString str, IOconnector *conn);

@@ -10,8 +10,9 @@ class sayCommand : public Command
     Q_OBJECT
 public:
     explicit sayCommand(QObject *parent = 0);
-    // 1 - сказать время, 2 - сказать температуру
+    // 1 - сказать время, 2 - сказать температуру, 3 - синтезировать речь speech
     short int type;
+    QString speech;
     int doCommand();
 
 private:

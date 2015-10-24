@@ -11,7 +11,6 @@
 #include "audiosteck.h"
 #include "web_termometr.h"
 #include "mail/sender.h"
-#include "linkmaker.h"
 #include <eventengine/eventengine.h>
 #include <QTimer>
 #include "config.h"
@@ -35,7 +34,7 @@ public:
     explicit controller(QObject *parent = 0);
     bool exist_online();
     void initPortBox();
-    void readConfig(QString name);
+    void readConfig(QString name, bool *links_from_db);
     ~controller();
 
 public slots:

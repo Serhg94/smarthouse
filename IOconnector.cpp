@@ -23,6 +23,11 @@ IOconnector::IOconnector(QObject *parent) :
     bus->moveToThread(&bus_thread);
     bus_thread.start();
 
+    sql_db = new sql_worker();
+    QObject::connect(&sql_thread, SIGNAL(started()), sql_db, SLOT(init()));
+    sql_db->moveToThread(&sql_thread);
+    sql_thread.start();
+
     vars = new variables();
 }
 

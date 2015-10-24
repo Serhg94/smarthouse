@@ -27,6 +27,18 @@ void audiosteck::update()
             player->play();
         }
         else mutex.unlock();
+        mutex2.lock();
+        if ((!speechlist.isEmpty())&&(player->state()==QMediaPlayer::StoppedState))
+        {
+            QString text = speechlist.first();
+            QString url_st = "http://translate.google.com/translate_tts?tl=ru&q=";
+            url_st.append(QUrl::toPercentEncoding(text));
+            speechlist.removeFirst();
+            mutex2.unlock();
+            player->setMedia(QUrl(url_st));
+            player->play();
+        }
+        else mutex2.unlock();
     }
     catch(...)
     {
@@ -41,4 +53,12 @@ void audiosteck::add(QString name)
     if (playlist.size()>=50) playlist.clear();
     playlist << name;
     mutex.unlock();
+}
+
+void audiosteck::addSpeech(QString text)
+{
+    mutex2.lock();
+    if (speechlist.size()>=50) speechlist.clear();
+    speechlist << text;
+    mutex2.unlock();
 }

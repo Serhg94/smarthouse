@@ -19,6 +19,11 @@ int sayCommand::doCommand()
         if (io_connector->bus->_debug)
             qDebug() << " Say temper = "<< io_connector->termo->get_T();
         break;
+    case 3:
+        io_connector->player->addSpeech(speech);
+        if (io_connector->bus->_debug)
+            qDebug() << " Say text = "<< speech;
+        break;
     }
     return 1;
 }
