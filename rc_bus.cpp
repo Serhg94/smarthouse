@@ -7,6 +7,9 @@ rc_bus::rc_bus(bool n, QObject *parent) :
 {
     net = n;
     _debug = false;
+    for(int i=0; i<10; i++)
+        for(int j=0; j<10; j++)
+            stat[i][j]=-1;
 }
 
 void rc_bus::init()

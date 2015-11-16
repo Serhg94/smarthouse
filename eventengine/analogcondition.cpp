@@ -13,11 +13,11 @@ int analogCondition::checkCondition()
     switch(type)
     {
     case 1:
-        if (val==212) return 6;
+        if (val==-1) return 6;
         if (val>value) return 1; else return 0;
         break;
     case 2:
-        if (val==212) return 6;
+        if (val==-1) return 6;
         if (val<value) return 1; else return 0;
         break;
     }
