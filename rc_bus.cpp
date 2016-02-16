@@ -17,7 +17,7 @@ void rc_bus::init()
     if (net)
     {
         udpSocket = new QUdpSocket();
-        udpSocket->bind(PORT_LISTEN1, QUdpSocket::ShareAddress);
+        udpSocket->bind(PORT_LISTEN1);
         QObject::connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
         QObject::connect(this, SIGNAL(gettedString(QString)), this, SLOT(parseDataStr(QString)));
         send_timer = new QTimer();

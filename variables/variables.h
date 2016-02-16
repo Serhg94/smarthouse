@@ -5,21 +5,26 @@
 #include <QMutex>
 #include <QTime>
 #include <QVector>
+#include <QList>
 #include "config.h"
+#include "mathexpression.h"
+
 
 class variables : public QObject
 {
     Q_OBJECT
 private:
-    QVector <int> vars;
+    QVector <double> vars;
 
 public:
     QMutex mutex;
+    QList <MathExpression*> value_generators;
     explicit variables(QObject *parent = 0);
-    void changeValue(int num, int val);
-    int at(int num);
+    void changeValue(int num, double val);
+    double at(int num);
+
 signals:
-    void valueChanged(int num, int val);
+    void valueChanged(int num, double val);
 
 public slots:
 

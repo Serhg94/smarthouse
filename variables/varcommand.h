@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <eventengine/command.h>
-#include <eventengine/variables/variables.h>
+#include <variables/variables.h>
 
 class varCommand : public Command
 {
@@ -13,7 +13,7 @@ public:
     //1-присвоить, 2-плюс, 3-минус
     short int type;
     short int number;
-    int value;
+    double value;
     int doCommand();
 signals:
 

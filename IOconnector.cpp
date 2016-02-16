@@ -6,7 +6,7 @@ IOconnector::IOconnector(QObject *parent) :
     //6668 - в него сервер отправляет
     //6669 - его сервер слушает
     udpSocket = new QUdpSocket();
-    udpSocket->bind(PORT_LISTEN, QUdpSocket::ShareAddress);
+    udpSocket->bind(PORT_LISTEN);
 
     termo = new web_termometr();
     QObject::connect(&tem_thread, SIGNAL(started()), termo, SLOT(init()));
@@ -39,4 +39,6 @@ IOconnector::~IOconnector()
     bus_thread.wait();
     audio_thread.quit();
     audio_thread.wait();
+    sql_thread.quit();
+    sql_thread.wait();
 }

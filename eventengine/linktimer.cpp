@@ -14,7 +14,7 @@ void Linktimer::startInOneThread()
     }
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkLinks()));
     QObject::connect(this->io_connector->bus, SIGNAL(statsChangedCheck(int)), this, SLOT(checkLinks()));
-    QObject::connect(this->io_connector->vars, SIGNAL(valueChanged(int,int)), this, SLOT(checkLinks()));
+    QObject::connect(this->io_connector->vars, SIGNAL(valueChanged(int,double)), this, SLOT(checkLinks()));
     timer->start(100);
 }
 

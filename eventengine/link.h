@@ -27,7 +27,7 @@ public:
     void sendEvent();
     void setDoAfterOnceCheck();
     IOconnector * io_connector;
-int count = 0;
+    int count;
     void checkStart();
     QTimer *timer;
 

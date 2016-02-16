@@ -47,15 +47,16 @@ SOURCES += main.cpp\
     eventengine/mailcommand.cpp \
     eventengine/link.cpp \
     eventengine/linktimer.cpp \
-    eventengine/variables/variables.cpp \
+    variables/variables.cpp \
     linkmaker.cpp \
     controller.cpp \
-    eventengine/variables/varcondition.cpp \
-    eventengine/variables/varcommand.cpp \
+    variables/varcondition.cpp \
+    variables/varcommand.cpp \
     IOconnector.cpp \
     sql_worker.cpp \
     linkmakerdb.cpp \
-    eventengine/sqlcommand.cpp
+    eventengine/sqlcommand.cpp \
+    variables/mathexpression.cpp
 
 HEADERS  += \
     rc_bus.h \
@@ -90,16 +91,18 @@ HEADERS  += \
     eventengine/mailcommand.h \
     eventengine/link.h \
     eventengine/linktimer.h \
-    eventengine/variables/variables.h \
+    variables/variables.h \
     linkmaker.h \
     controller.h \
-    eventengine/variables/varcondition.h \
-    eventengine/variables/varcommand.h \
+    variables/varcondition.h \
+    variables/varcommand.h \
     IOconnector.h \
     config.h \
     sql_worker.h \
     linkmakerdb.h \
-    eventengine/sqlcommand.h
+    eventengine/sqlcommand.h \
+    variables/mathexpression.h \
+    variables/token.h
 
 #FORMS    += mainwindow.ui \
 #    alarmdialog.ui

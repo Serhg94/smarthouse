@@ -4,9 +4,12 @@
 #include <QDebug>
 #include <QtMsgHandler>
 
+#include <windows.h>
+
 //#include "mainwindow.h"
 //#include "alarmdialog.h"
 #include "controller.h"
+
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -17,6 +20,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     switch (type) {
     case QtDebugMsg:
         fprintf(file, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        printf("%s\n", msg.toLocal8Bit().constData());
         break;
     case QtWarningMsg:
         fprintf(file, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
@@ -33,7 +37,8 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 int main(int argc, char *argv[])
 {
-    //qInstallMessageHandler(myMessageOutput);
+    setlocale( LC_ALL,"Russian" );
+    qInstallMessageHandler(myMessageOutput);
     QCoreApplication a(argc, argv);
 //    alarmDialog budil;
 //    QThread controlThread;

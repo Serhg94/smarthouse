@@ -14,11 +14,11 @@ void controller::init()
     io_connector = new IOconnector(this);
 
     QObject::connect(io_connector->udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
-    QObject::connect(io_connector->bus, SIGNAL(gettedString(QString)), this, SLOT(appendStr(QString)));
+    //QObject::connect(io_connector->bus, SIGNAL(gettedString(QString)), this, SLOT(appendStr(QString)));
     QObject::connect(io_connector->bus, SIGNAL(sendedString(QString)), this, SLOT(appendStr(QString)));
     QObject::connect(io_connector->bus, SIGNAL(gettedString(QString)), this, SLOT(sendDatagram(QString)));
     QObject::connect(io_connector->bus, SIGNAL(statsChanged(int)), this, SLOT(sendToView(int)));
-    QObject::connect(io_connector->vars, SIGNAL(valueChanged(int,int)), this, SLOT(sendVariables()));
+    QObject::connect(io_connector->vars, SIGNAL(valueChanged(int,double)), this, SLOT(sendVariables()));
     // подключение CELAC
     linkengine = new Linktimer(io_connector);
     many_thread = 0;
@@ -27,7 +27,6 @@ void controller::init()
     readConfig("config.ini", &db);
     io_connector->sql_db->initDB();
     if (db)
-        //io_connector->sql_db->makeLinksTableFromDB();
         makeLinksFromDB(io_connector, linkengine);
     QObject::connect(this, SIGNAL(toLog(QString)), this, SLOT(_debugInfo(QString)));
 
@@ -38,9 +37,6 @@ void controller::init()
     }
     else
     {
-        //linkengine->moveToThread(&link_thread);
-        //link_thread.start();
-        //QObject::connect(&link_thread, SIGNAL(started()), linkengine, SLOT(startInOneThread()));
         linkengine->startInOneThread();
         qDebug() << " Link engine started in one thread";
     }
@@ -48,10 +44,6 @@ void controller::init()
     up_timer = new QTimer();
     QObject::connect(up_timer, SIGNAL(timeout()), this, SLOT(update()));
     up_timer->start(UPT_MSEC);
-
-    main_control_timer = new QTimer();
-    QObject::connect(main_control_timer, SIGNAL(timeout()), this, SLOT(main_control()));
-    main_control_timer->start(MCT_MSEC);
 
     maintain_timer = new QTimer();
     QObject::connect(maintain_timer, SIGNAL(timeout()), this, SLOT(maintain()));
@@ -119,7 +111,17 @@ void controller::readConfig(QString name, bool *links_from_db)
                     if (list[0].contains("var")){
                         int num = list[0].mid(str.indexOf("[")+1,
                                               str.indexOf("]")-str.indexOf("[")-1).toInt();
-                        io_connector->vars->changeValue(num, list[1].toInt());
+                        bool err = false;
+                        if (io_connector->vars->value_generators[num]->Parse(list[1].simplified()))
+                        {
+                            if (io_connector->vars->value_generators[num]->isConst())
+                                io_connector->vars->changeValue(num, io_connector->vars->value_generators[num]->Calculate(err, io_connector));
+                            if (err)
+                                qDebug() << "Ошибка вычисления математической формулы: " << list[1].simplified();
+                        }
+                        else
+                            qDebug() << "Ошибка разбора математической формулы: " << list[1].simplified();
+                        //io_connector->vars->changeValue(num, list[1].toDouble());
                     }
                 }
 
@@ -140,6 +142,8 @@ void controller::_debugInfo(QString msg)
 {
     if (io_connector->bus->_debug)
         qDebug() << " " << msg;
+    else
+        printf("%s\n", msg.toLocal8Bit().constData());
 }
 
 void controller::openPort(QString s)
@@ -156,21 +160,18 @@ void controller::appendStr(QString info)
 
 void controller::update()
 {
-    //for(int i = 0; i<=10; i++)
-    //{
-    //    io_connector->bus->stat[i][1]=0;
-    //}
-    emit RefreshView(1, "1 - OFFLINE");
-    emit RefreshView(2, "2 - OFFLINE");
-    emit RefreshView(3, "3 - OFFLINE");
-    emit RefreshView(4, "4 - OFFLINE");
-    emit RefreshView(5, "5 - OFFLINE");
-    emit RefreshView(6, "6 - OFFLINE");
-
+    for (int i = 0; i < VAR_COUNT; i++)
+    {
+        if (io_connector->vars->value_generators.at(i)->isConst())
+            continue;
+        bool err = false;
+        double val = io_connector->vars->value_generators.at(i)->Calculate(err, io_connector);
+        if (err == false)
+            io_connector->vars->changeValue(i, val);
+        else
+            qDebug() << "Ошибка вычисления математической формулы: " << io_connector->vars->value_generators.at(i)->primal_str;
+    }
     io_connector->bus->sendStr("clr");
-    //QString a("clr");
-    //a[a.length()]='\n';
-    //io_connector->bus->serial->write(a.toLatin1());
 }
 
 
@@ -199,20 +200,6 @@ void controller::speakTime()
 }
 
 
-void controller::bud_action(int num, QString action)
-{
-    io_connector->player->add("bud.wav");
-    speakTime();
-    io_connector->bus->sendStr(action);
-}
-
-
-void controller::main_control()
-{
-
-}
-
-
 void controller::maintain()
 {
     QString s;  s = QString("temp%1;")
@@ -234,7 +221,7 @@ void controller::sendToView(int sn)
             .arg(io_connector->bus->stat[sn][2])
             .arg(io_connector->bus->butt[sn]);
     io_connector->bus->read_mutex.unlock();
-    emit RefreshView(sn, s);
+    emit toLog(s);
 }
 
 
@@ -257,8 +244,9 @@ void controller::processPendingDatagrams()
         datagram.resize(io_connector->udpSocket->pendingDatagramSize());
         io_connector->udpSocket->readDatagram(datagram.data(), datagram.size());
         QString data = QString(datagram);
+        if (data.length()<3) return;
         if (data[data.length()-1]!='\n') data[data.length()] = '\n';
-                emit toLog(data);
+        emit toLog(data);
         if (data.contains("temp"))
         {
             speakTerm(io_connector->termo->get_T());
@@ -270,12 +258,7 @@ void controller::processPendingDatagrams()
             speakTime();
         }
         else
-        if (data.contains("bud"))
-        {
-
-        }
-        else
-        if (data.contains("getio_connector->vars"))
+        if (data.contains("getvars"))
         {
             sendVariables();
         }
@@ -287,34 +270,6 @@ void controller::processPendingDatagrams()
                 io_connector->vars->changeValue(list[1].toInt(), list[2].toInt());
         }
         else
-        // посылаем состояния всех галок, с большой буквы - чтоб не путалось с запросами от других клиентов
-//        if (data.contains("getoptions"))
-//        {
-//            QString s;  s = QString("Getoptions%1%2%3%4%5")
-//                    .arg((int)ui->sayinfoBox->isChecked())
-//                    .arg((int)ui->ddnigthBox->isChecked())
-//                    .arg((int)ui->dooralertBox->isChecked())
-//                    .arg((int)ui->lockalertBox->isChecked())
-//                    .arg((int)ui->doorlightBox->isChecked());
-//            sendDatagram(s);
-//        }
-//        else
-//        // установка присланных состояний галок
-//        if (data.contains("options"))
-//        {
-//            if (data[7]=='1') ui->sayinfoBox->setChecked(true);
-//            else if (data[7]=='0') ui->sayinfoBox->setChecked(false);
-//            if (data[8]=='1') ui->ddnigthBox->setChecked(true);
-//            else if (data[8]=='0') ui->ddnigthBox->setChecked(false);
-//            if (data[9]=='1') ui->dooralertBox->setChecked(true);
-//            else if (data[9]=='0') ui->dooralertBox->setChecked(false);
-//            if (data[10]=='1') ui->lockalertBox->setChecked(true);
-//            else if (data[10]=='0') ui->lockalertBox->setChecked(false);
-//            if (data[11]=='1') ui->doorlightBox->setChecked(true);
-//            else if (data[11]=='0') ui->doorlightBox->setChecked(false);
-//        }
-//        else
-        //qDebug()<<datagram.data();
             io_connector->bus->sendStr(data);
             //io_connector->bus->serial->write(data.toLatin1());
     }

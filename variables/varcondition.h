@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <eventengine/condition.h>
-#include <eventengine/variables/variables.h>
+#include <variables/variables.h>
 
 
 class varCondition : public Condition
@@ -15,7 +15,7 @@ public:
     //1-больше, 2-меньше, 3-равно, 4-не равно
     short int type;
     short int number;
-    int value;
+    double value;
 signals:
 
 public slots:

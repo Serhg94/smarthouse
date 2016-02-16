@@ -27,6 +27,24 @@ int makeLinksFromDB(IOconnector *conn, Linktimer *lt)
                 lt->links.append(link);
             }
         }
+        query.exec("SELECT * FROM equipment WHERE object IS NOT NULL");
+        while (query.next())
+        {
+            if (query.value("type").toString()=="var")
+            {
+                int addr = query.value("addr").toInt();
+                bool err = false;
+                if (conn->vars->value_generators[addr]->Parse(query.value("object").toString()))
+                {
+                    if (conn->vars->value_generators[addr]->isConst())
+                        conn->vars->changeValue(addr, conn->vars->value_generators[addr]->Calculate(err, conn));
+                    if (err)
+                        qDebug() << "Ошибка вычисления математической формулы: " << query.value("object").toString();
+                }
+                else
+                    qDebug() << "Ошибка разбора математической формулы: " << query.value("object").toString();
+            }
+        }
         qDebug()<<" Скрипты загружены";
         return 1;
     }

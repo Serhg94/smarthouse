@@ -7,6 +7,7 @@
 Link::Link(QObject *parent) :
     QObject(parent)
 {
+    count = 0;
     enabled = true;
     do_after = false;
     once_check = false;
