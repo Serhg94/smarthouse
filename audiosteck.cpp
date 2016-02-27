@@ -7,8 +7,8 @@ audiosteck::audiosteck(QWidget *parent)
 
 void audiosteck::init()
 {
-    player = new QMediaPlayer();
-    maint = new QTimer();
+    player = new QMediaPlayer(this);
+    maint = new QTimer(this);
     QObject::connect(maint, SIGNAL(timeout()), this, SLOT(update()));
     maint->start(100);
 }

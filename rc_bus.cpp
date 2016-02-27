@@ -6,6 +6,7 @@ rc_bus::rc_bus(bool n, QObject *parent) :
     QObject(parent)
 {
     net = n;
+    ip = QHostAddress::Broadcast;
     _debug = false;
     for(int i=0; i<10; i++)
         for(int j=0; j<10; j++)
@@ -16,44 +17,50 @@ void rc_bus::init()
 {
     if (net)
     {
-        udpSocket = new QUdpSocket();
+        udpSocket = new QUdpSocket(this);
         udpSocket->bind(PORT_LISTEN1);
         QObject::connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
         QObject::connect(this, SIGNAL(gettedString(QString)), this, SLOT(parseDataStr(QString)));
-        send_timer = new QTimer();
-        ip = QHostAddress::Broadcast;
+        send_timer = new QTimer(this);
         QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
         send_timer->start(SEND_DELAY_MSEC);
+        qDebug()<<" Соединение сконфигурировано через сеть";
     }
     else
     {
         try
         {
             preset();
-            serial = new QSerialPort();
+            serial = new QSerialPort(this);
             QObject::connect(serial, SIGNAL(readyRead()), this, SLOT(readAllData()));
             QObject::connect(this, SIGNAL(gettedString(QString)), this, SLOT(parseDataStr(QString)));
-            open_port("Arduino Mega 2560", NULL);
-            send_timer = new QTimer();
+            //open_port("Arduino Mega 2560", NULL);
+            send_timer = new QTimer(this);
+            reconnect_timer = new QTimer(this);
+            QObject::connect(reconnect_timer, SIGNAL(timeout()), this, SLOT(reopen()));
             QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
+            qDebug()<<" Соединение сконфигурировано через COM порт";
+            if (!open_port(NULL, portstr))
+                qDebug() << " Не могу открыть COM порт!";
             send_timer->start(SEND_DELAY_MSEC);
+            reconnect_timer->start(COM_REOPEN_DELAY_MSEC);
         }
         catch(...)
         {
-            qDebug() << " Port open FAIL!";
+            qDebug() << " Не могу открыть COM порт!";
 //            QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка инициализации шины"));
         }
     }
-    qDebug()<<" Порт открыт";
 }
 
 
 void rc_bus::reopen()
 {
-    if (!net)
+    if (!serial->isOpen())
     {
         serial->close();
-        open_port(NULL, portstr);
+        if (!open_port(NULL, portstr))
+            qDebug() << " Не могу открыть COM порт!";
     }
 }
 
@@ -72,6 +79,7 @@ bool rc_bus::open_port(QString desport, QString nameport)
                 }
             }
             if (nameport!=NULL) serial->setPortName(nameport);
+            //qDebug() << nameport;
             if (serial->open(QIODevice::ReadWrite)){
                 QSerialPortInfo info(serial->portName());
                 if (!serial->setBaudRate(115200)) {
@@ -162,9 +170,11 @@ void rc_bus::send()
 {
     if (!net)
     {
+        if (serial->isOpen())
+        //    this->reopen();
         try
         {
-            qDebug()<<"отправка";
+            //qDebug()<<"отправка";
             send_mutex.lock();
             if (send_buff.size()<1)
             {
@@ -358,7 +368,14 @@ void rc_bus::processPendingDatagrams()
     while (udpSocket->hasPendingDatagrams()) {
         QByteArray datagram;
         datagram.resize(udpSocket->pendingDatagramSize());
-        udpSocket->readDatagram(datagram.data(), datagram.size(), &ip);
+        QHostAddress new_ip;
+        udpSocket->readDatagram(datagram.data(), datagram.size(), &new_ip);
+        //qDebug() << ip.toString();
+        //qDebug() << new_ip.toString();
+        if (ip==QHostAddress::Broadcast)
+            ip = new_ip;
+        else if ((ip.toIPv4Address()!=new_ip.toIPv4Address())&&(ip!=new_ip))
+            return;
         QString data = QString(datagram);
         emit gettedString(data);
     }

@@ -9,10 +9,8 @@
 #include <QUdpSocket>
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
+#include "config.h"
 
-#define SEND_DELAY_MSEC 10
-#define PORT_SEND1 6667
-#define PORT_LISTEN1 6666
 
 class rc_bus : public QObject
 {
@@ -35,6 +33,8 @@ public:
     void sendStr(QString string);
     void preset();
     bool open_port(QString desport, QString nameport);
+    void setNetUse(bool _net) {net = _net;}
+    bool getNetUse() {return net;}
 
     QSerialPort *serial;
     ~rc_bus();
@@ -62,6 +62,7 @@ private:
     QString *buffer = NULL;
     QUdpSocket *udpSocket;
     QTimer *send_timer; //таймер между отправлениями команд из буфера
+    QTimer *reconnect_timer;
     QVector<QString> send_buff;
 };
 

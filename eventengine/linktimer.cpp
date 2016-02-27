@@ -8,7 +8,7 @@ Linktimer::Linktimer(IOconnector * io, QObject *parent) :
 
 void Linktimer::startInOneThread()
 {
-    timer = new QTimer();
+    timer = new QTimer(this);
     for (int i = 0; i < links.size(); ++i) {
         links.at(i)->init();
     }
@@ -21,7 +21,7 @@ void Linktimer::startInOneThread()
 void Linktimer::startInManyThreads()
 {
     for (int i = 0; i < links.size(); ++i) {
-        link_threads.append(new QThread());
+        link_threads.append(new QThread(this));
         QObject::connect(link_threads.at(i), SIGNAL(started()), links.at(i), SLOT(init()));
         links.at(i)->moveToThread(link_threads.at(i));
         link_threads.at(i)->start();

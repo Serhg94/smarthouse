@@ -33,7 +33,7 @@ public:
     explicit controller(QObject *parent = 0);
     bool exist_online();
     void initPortBox();
-    void readConfig(QString name, bool *links_from_db);
+    void readConfig(QString name, bool &links_from_db, bool &use_com, QString &com_name, QString &server_ip);
     ~controller();
 
 public slots:

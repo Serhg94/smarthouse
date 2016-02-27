@@ -19,7 +19,7 @@ Link::Link(QObject *parent) :
 
 void Link::init()
 {
-    do_after_timer = new QTimer();
+    do_after_timer = new QTimer(this);
     do_after_timer->setSingleShot(true);
     QObject::connect(do_after_timer, SIGNAL(timeout()), this, SLOT(enableLink()));
 
@@ -32,7 +32,7 @@ void Link::init()
 //экспериментально
 void Link::checkStart()
 {
-    timer = new QTimer();
+    timer = new QTimer(this);
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkLink()));
     timer->start(10);
 }

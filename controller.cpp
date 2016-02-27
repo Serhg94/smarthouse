@@ -20,11 +20,15 @@ void controller::init()
     QObject::connect(io_connector->bus, SIGNAL(statsChanged(int)), this, SLOT(sendToView(int)));
     QObject::connect(io_connector->vars, SIGNAL(valueChanged(int,double)), this, SLOT(sendVariables()));
     // подключение CELAC
-    linkengine = new Linktimer(io_connector);
+    linkengine = new Linktimer(io_connector, this);
     many_thread = 0;
 
     bool db = false;
-    readConfig("config.ini", &db);
+    bool use_com = false;
+    QString com_name = "";
+    QString controller_ip = "";
+    readConfig("config.ini", db, use_com, com_name, controller_ip);
+    io_connector->bus_init(!use_com, com_name, controller_ip);
     io_connector->sql_db->initDB();
     if (db)
         makeLinksFromDB(io_connector, linkengine);
@@ -33,26 +37,26 @@ void controller::init()
     if (this->many_thread==1)
     {
         linkengine->startInManyThreads();
-        qDebug() << " Link engine started in many thread";
+        qDebug() << " Движок линков запущен в многопоточном режиме";
     }
     else
     {
         linkengine->startInOneThread();
-        qDebug() << " Link engine started in one thread";
+        qDebug() << " Движок линков запущен в однопоточном режиме";
     }
 
-    up_timer = new QTimer();
+    up_timer = new QTimer(this);
     QObject::connect(up_timer, SIGNAL(timeout()), this, SLOT(update()));
     up_timer->start(UPT_MSEC);
 
-    maintain_timer = new QTimer();
+    maintain_timer = new QTimer(this);
     QObject::connect(maintain_timer, SIGNAL(timeout()), this, SLOT(maintain()));
     maintain_timer->start(MAINTAIN_MSEC);
 
 }
 
 
-void controller::readConfig(QString name, bool *links_from_db)
+void controller::readConfig(QString name, bool &links_from_db, bool &use_com, QString &com_name, QString &server_ip)
 {
     try
     {
@@ -84,8 +88,19 @@ void controller::readConfig(QString name, bool *links_from_db)
                     }
                     if (list[0].contains("links_from_db")){
                         if (list[1].contains("1")){
-                            *links_from_db = true;
+                            links_from_db = true;
                         }
+                    }
+                    if (list[0].contains("use_com")){
+                        if (list[1].contains("1")){
+                            use_com = true;
+                        }
+                    }
+                    if (list[0].contains("com_port")){
+                        com_name = list[1].simplified();
+                    }
+                    if (list[0].contains("controller_ip")){
+                        server_ip = list[1].simplified();
                     }
                     if (list[0].contains("db_addr")){
                         io_connector->sql_db->addr = list[1].simplified();

@@ -12,7 +12,7 @@ sql_worker::sql_worker(QObject *parent) : QObject(parent)
 
 void sql_worker::init()
 {
-    maint = new QTimer();
+    maint = new QTimer(this);
     QObject::connect(maint, SIGNAL(timeout()), this, SLOT(update()));
     maint->start(100);
     //qDebug() << "INIT" <<    this->thread()->currentThreadId();

@@ -5,7 +5,7 @@ IOconnector::IOconnector(QObject *parent) :
 {
     //6668 - в него сервер отправляет
     //6669 - его сервер слушает
-    udpSocket = new QUdpSocket();
+    udpSocket = new QUdpSocket(this);
     udpSocket->bind(PORT_LISTEN);
 
     termo = new web_termometr();
@@ -18,17 +18,27 @@ IOconnector::IOconnector(QObject *parent) :
     player->moveToThread(&audio_thread);
     audio_thread.start();
 
-    bus = new rc_bus(true);
-    QObject::connect(&bus_thread, SIGNAL(started()), bus, SLOT(init()));
+    bus = new rc_bus();
+    //QObject::connect(&bus_thread, SIGNAL(started()), bus, SLOT(init()));
     bus->moveToThread(&bus_thread);
-    bus_thread.start();
+    //bus_thread.start();
 
     sql_db = new sql_worker();
     QObject::connect(&sql_thread, SIGNAL(started()), sql_db, SLOT(init()));
     sql_db->moveToThread(&sql_thread);
     sql_thread.start();
 
-    vars = new variables();
+    vars = new variables(this);
+}
+
+void IOconnector::bus_init(bool net, QString com, QString ip)
+{
+    this->bus->setNetUse(net);
+    this->bus->portstr = com;
+    if (ip!="")
+        this->bus->ip = QHostAddress(ip);
+    QObject::connect(&bus_thread, SIGNAL(started()), bus, SLOT(init()));
+    bus_thread.start();
 }
 
 IOconnector::~IOconnector()

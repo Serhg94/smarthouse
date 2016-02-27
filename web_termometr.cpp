@@ -10,10 +10,10 @@ web_termometr::web_termometr(QObject *parent)
 
 void web_termometr::init()
 {
-    m_WebCtrl = new QNetworkAccessManager();
+    m_WebCtrl = new QNetworkAccessManager(this);
     QObject::connect(m_WebCtrl, SIGNAL(finished(QNetworkReply*)),
                 SLOT(fileDownloaded(QNetworkReply*)));
-    maint = new QTimer();
+    maint = new QTimer(this);
     QObject::connect(maint, SIGNAL(timeout()), this, SLOT(update()));
     maint->start(120000);
     update();

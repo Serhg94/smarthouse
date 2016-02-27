@@ -33,6 +33,7 @@ private:
 signals:
 
 public slots:
+    void bus_init(bool net, QString com, QString ip);
 
 };
 
