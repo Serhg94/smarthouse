@@ -25,6 +25,7 @@ void rc_bus::init()
         QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
         send_timer->start(SEND_DELAY_MSEC);
         qDebug()<<" Соединение сконфигурировано через сеть";
+        sendStr("clr");
     }
     else
     {
@@ -62,6 +63,29 @@ void rc_bus::reopen()
         if (!open_port(NULL, portstr))
             qDebug() << " Не могу открыть COM порт!";
     }
+}
+
+void rc_bus::initCheck()
+{
+    for(int j=0; j<10; j++)
+        stat[j][3]=-1;
+    sendStr("clr");
+    QTimer::singleShot(1000, this, SLOT(endCheck()));
+}
+
+void rc_bus::endCheck()
+{
+    for(int i=0; i<10; i++)
+        if (stat[i][3]==-1)
+        {
+            read_mutex.lock();
+            for(int j=0; j<10; j++)
+                stat[i][j]=-1;
+            sets[i] = "666666666666666";
+            butt[i] = "6666";
+            rebs[i] = "6666";
+            read_mutex.unlock();
+        }
 }
 
 
@@ -314,6 +338,7 @@ void rc_bus::parseDataStr(QString string)
           {
               parseDataStr(str);
           }
+          stat[sn][3]=1;
           emit statsChanged(sn);
           if (change)
           {

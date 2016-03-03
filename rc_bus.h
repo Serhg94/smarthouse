@@ -35,6 +35,7 @@ public:
     bool open_port(QString desport, QString nameport);
     void setNetUse(bool _net) {net = _net;}
     bool getNetUse() {return net;}
+    void initCheck();
 
     QSerialPort *serial;
     ~rc_bus();
@@ -51,6 +52,7 @@ public slots:
     void changeState(int num_ctr, int num_set);
 
 private slots:
+    void endCheck();
     void parseDataStr(QString string);
     void readAllData();
     void processPendingDatagrams();

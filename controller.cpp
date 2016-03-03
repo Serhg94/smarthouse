@@ -186,7 +186,7 @@ void controller::update()
         else
             qDebug() << "Ошибка вычисления математической формулы: " << io_connector->vars->value_generators.at(i)->primal_str;
     }
-    io_connector->bus->sendStr("clr");
+    io_connector->bus->initCheck();
 }
 
 
@@ -305,6 +305,6 @@ controller::~controller()
 {
     link_thread.quit();
     link_thread.wait();
-    io_connector->~IOconnector();
+    io_connector->deleteLater();
 }
 
