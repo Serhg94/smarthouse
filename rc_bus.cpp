@@ -210,7 +210,7 @@ void rc_bus::send()
             send_buff.pop_front();
             send_mutex.unlock();
             serial->write(string.toLatin1());
-            emit sendedString(string);
+            emit sendedString("SENDED: "+string);
         }
         catch(...)
         {
@@ -233,7 +233,7 @@ void rc_bus::send()
         send_mutex.unlock();
         udpSocket->writeDatagram(datagram.data(), datagram.size(),
                                     ip, PORT_SEND1);
-        emit sendedString(string);
+        emit sendedString("SENDED: "+string);
     }
 }
 
@@ -395,6 +395,7 @@ void rc_bus::processPendingDatagrams()
         datagram.resize(udpSocket->pendingDatagramSize());
         QHostAddress new_ip;
         udpSocket->readDatagram(datagram.data(), datagram.size(), &new_ip);
+        if (datagram.length()<3) return;
         //qDebug() << ip.toString();
         //qDebug() << new_ip.toString();
         if (ip==QHostAddress::Broadcast)

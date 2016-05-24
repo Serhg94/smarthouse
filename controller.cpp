@@ -123,6 +123,12 @@ void controller::readConfig(QString name, bool &links_from_db, bool &use_com, QS
                     if (list[0].contains("links_from_file")){
                         makeLinksFromFile(list[1].simplified(), io_connector, linkengine);
                     }
+                    if (list[0].contains("sityID")){
+                        io_connector->termo->sity = list[1].simplified();
+                    }
+                    if (list[0].contains("APIkey")){
+                        io_connector->termo->api_key = list[1].simplified();
+                    }
                     if (list[0].contains("var")){
                         int num = list[0].mid(str.indexOf("[")+1,
                                               str.indexOf("]")-str.indexOf("[")-1).toInt();
@@ -261,7 +267,7 @@ void controller::processPendingDatagrams()
         QString data = QString(datagram);
         if (data.length()<3) return;
         if (data[data.length()-1]!='\n') data[data.length()] = '\n';
-        emit toLog(data);
+        emit toLog("NET RECEIVED: "+data);
         if (data.contains("temp"))
         {
             speakTerm(io_connector->termo->get_T());

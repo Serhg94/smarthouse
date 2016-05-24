@@ -12,6 +12,8 @@ class web_termometr : public QObject
 public:
     explicit web_termometr(QObject *parent = 0);
     volatile bool _debug;
+    QString sity;
+    QString api_key;
     int get_T();
 
 private:
