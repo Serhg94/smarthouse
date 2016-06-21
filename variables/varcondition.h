@@ -16,6 +16,7 @@ public:
     short int type;
     short int number;
     double value;
+    QString getDependences(){return QString("var%1").arg(number);}
 signals:
 
 public slots:

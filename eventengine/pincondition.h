@@ -25,6 +25,7 @@ public:
     // 1 - выполняется, 0 - не выполняется, 6 - что то пошло не так.
     int checkCondition();
     void init();
+    QString getDependences(){return QString("bus%1").arg(mk);}
 signals:
 
 public slots:

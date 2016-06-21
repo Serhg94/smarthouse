@@ -18,7 +18,7 @@ void controller::init()
     QObject::connect(io_connector->bus, SIGNAL(sendedString(QString)), this, SLOT(appendStr(QString)));
     QObject::connect(io_connector->bus, SIGNAL(gettedString(QString)), this, SLOT(sendDatagram(QString)));
     QObject::connect(io_connector->bus, SIGNAL(statsChanged(int)), this, SLOT(sendToView(int)));
-    QObject::connect(io_connector->vars, SIGNAL(valueChanged(int,double)), this, SLOT(sendVariables()));
+    QObject::connect(io_connector->vars, SIGNAL(valueChanged(QString)), this, SLOT(sendVariables()));
     // подключение CELAC
     linkengine = new Linktimer(io_connector, this);
     many_thread = 0;

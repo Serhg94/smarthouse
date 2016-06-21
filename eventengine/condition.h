@@ -12,6 +12,7 @@ public:
 
     explicit Condition(QObject *parent = 0);
     virtual int checkCondition();
+    virtual QString getDependences();
 
 signals:
 

@@ -16,7 +16,7 @@ void variables::changeValue(int num, double val)
     vars[num] = val;
     mutex.unlock();
     if (old_val != val)
-        emit valueChanged(num, val);
+        emit valueChanged(QString("var%1").arg(num));
 }
 
 double variables::at(int num)

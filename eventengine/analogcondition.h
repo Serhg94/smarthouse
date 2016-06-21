@@ -19,6 +19,8 @@ public:
     int value;
     // 1 - выполняется, 0 - не выполняется, 6 - что то пошло не так.
     int checkCondition();
+
+    QString getDependences(){return QString("analog%1").arg(mk);}
 signals:
 
 public slots:

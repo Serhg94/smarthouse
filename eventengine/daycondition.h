@@ -16,6 +16,7 @@ public:
     int day;
     // 1 - выполняется, 0 - не выполняется, 6 - что то пошло не так.
     int checkCondition();
+    QString getDependences(){return QString("day");}
 signals:
 
 public slots:

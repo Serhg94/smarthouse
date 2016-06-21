@@ -15,6 +15,7 @@ public:
     explicit timeCondition(QObject *parent = 0);
     // 1 - выполняется, 0 - не выполняется, 6 - что то пошло не так.
     int checkCondition();
+    QString getDependences(){return QString("time");}
 signals:
 
 public slots:

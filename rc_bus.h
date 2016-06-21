@@ -44,7 +44,7 @@ signals:
     void gettedString(QString str);
     void sendedString(QString str);
     void statsChanged(int sn);
-    void statsChangedCheck(int sn);
+    void statsChangedCheck(QString depend);
 
 public slots:
     void reopen();

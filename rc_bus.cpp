@@ -343,7 +343,7 @@ void rc_bus::parseDataStr(QString string)
           if (change)
           {
               //read_mutex.tryLock();
-              emit statsChangedCheck(sn);
+              emit statsChangedCheck(QString("bus%1").arg(sn));
           }
     }
     catch(...)

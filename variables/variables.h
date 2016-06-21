@@ -24,7 +24,7 @@ public:
     double at(int num);
 
 signals:
-    void valueChanged(int num, double val);
+    void valueChanged(QString depend);
 
 public slots:
 

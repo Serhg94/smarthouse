@@ -19,13 +19,18 @@ Link::Link(QObject *parent) :
 
 void Link::init()
 {
+    for (int i = 0; i < event->conditions.size(); ++i)
+          dependences+=event->conditions.at(i)->getDependences()+',';
     do_after_timer = new QTimer(this);
     do_after_timer->setSingleShot(true);
     QObject::connect(do_after_timer, SIGNAL(timeout()), this, SLOT(enableLink()));
+}
 
-    //timer = new QTimer();
-    //QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkLink()));
-    //timer->start(10);
+
+void Link::init_multy_thread()
+{
+    init();
+    checkStart();
 }
 
 
@@ -34,7 +39,7 @@ void Link::checkStart()
 {
     timer = new QTimer(this);
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkLink()));
-    timer->start(10);
+    timer->start(1000);
 }
 //-----------------
 
@@ -43,6 +48,12 @@ void Link::sendEvent()
     QString s;  s = QString("INSERT INTO `smarthouse`.`events` (`time`, `description`, `link_idlink`) VALUES ('%1', '%2', '%3')")
             .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")).arg(description).arg(idlink);
     io_connector->sql_db->addNonAnswerRequest(s);
+}
+
+void Link::checkDepLink(QString depend)
+{
+    if (dependences.contains(depend, Qt::CaseInsensitive))
+        checkLink();
 }
 
 void Link::checkLink()
@@ -120,4 +131,5 @@ void Link::setDoAfterOnceCheck()
 void Link::enableLink()
 {
     enabled = true;
+    checkLink();
 }

@@ -13,29 +13,35 @@ void Linktimer::startInOneThread()
         links.at(i)->init();
     }
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkLinks()));
-    QObject::connect(this->io_connector->bus, SIGNAL(statsChangedCheck(int)), this, SLOT(checkLinks()));
-    QObject::connect(this->io_connector->vars, SIGNAL(valueChanged(int,double)), this, SLOT(checkLinks()));
-    timer->start(100);
+    QObject::connect(this->io_connector->bus, SIGNAL(statsChangedCheck(QString)), this, SLOT(checkDepLinks(QString)));
+    QObject::connect(this->io_connector->vars, SIGNAL(valueChanged(QString)), this, SLOT(checkDepLinks(QString)));
+    timer->start(1000);
 }
 
 void Linktimer::startInManyThreads()
 {
     for (int i = 0; i < links.size(); ++i) {
         link_threads.append(new QThread(this));
-        QObject::connect(link_threads.at(i), SIGNAL(started()), links.at(i), SLOT(init()));
+        QObject::connect(link_threads.at(i), SIGNAL(started()), links.at(i), SLOT(init_multy_thread()));
         links.at(i)->moveToThread(link_threads.at(i));
         link_threads.at(i)->start();
-        links.at(i)->checkStart();
+        QObject::connect(this->io_connector->bus, SIGNAL(statsChangedCheck(QString)), links.at(i), SLOT(checkDepLink(QString)));
+        QObject::connect(this->io_connector->vars, SIGNAL(valueChanged(QString)), links.at(i), SLOT(checkDepLink(QString)));
     }
 }
 
 void Linktimer::checkLinks()
 {
-    //mutex.lock();
     for (int i = 0; i < links.size(); ++i) {
         links.at(i)->checkLink();
     }
-    //mutex.unlock();
-    //this->io_connector->bus->read_mutex.unlock();
-    //this->io_connector->vars->mutex.unlock();
 }
+
+void Linktimer::checkDepLinks(QString depend)
+{
+    for (int i = 0; i < links.size(); ++i) {
+        if (links.at(i)->dependences.contains(depend, Qt::CaseInsensitive))
+            links.at(i)->checkLink();
+    }
+}
+

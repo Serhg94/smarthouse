@@ -22,6 +22,7 @@ public slots:
     void startInManyThreads();
     void startInOneThread();
     void checkLinks();
+    void checkDepLinks(QString depend);
 };
 
 #endif // LINKTIMER_H

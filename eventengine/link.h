@@ -21,6 +21,7 @@ public:
     bool event_gen_onstart;
     bool event_gen_onend;
     QString description;
+    QString dependences;
     int idlink;
     int timeout;
     void setDoAfter();
@@ -38,9 +39,11 @@ private:
 signals:
 
 public slots:
+    void init_multy_thread();
     void enableLink();
     void init();
     void checkLink();
+    void checkDepLink(QString depend);
 
 };
 
