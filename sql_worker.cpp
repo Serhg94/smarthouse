@@ -60,19 +60,18 @@ void sql_worker::update()
             //DO REQUEST req
             //qDebug() <<req;
             QSqlQuery query(req, db);
-            if (!db.isValid() ||query.lastError().number()==2006)
-            {
-                initDB();
-                mutex.lock();
+            if (query.lastError().type()!=QSqlError::NoError)
                 addNonAnswerRequest(req);
-                mutex.unlock();
-            }
+            if (!db.isValid() ||query.lastError().number()==2006)
+                initDB();
+
             //qDebug() <<req;
         }
         else mutex.unlock();
     }
     catch(...)
     {
+        mutex.unlock();
         //qDebug() << " Can't do SQL request";
     }
 }

@@ -399,7 +399,10 @@ void rc_bus::processPendingDatagrams()
         //qDebug() << ip.toString();
         //qDebug() << new_ip.toString();
         if (ip==QHostAddress::Broadcast)
+        {
             ip = new_ip;
+            qDebug()<< " Головной контроллер ответил с адреса " << ip.toString();
+        }
         else if ((ip.toIPv4Address()!=new_ip.toIPv4Address())&&(ip!=new_ip))
             return;
         QString data = QString(datagram);
