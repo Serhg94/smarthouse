@@ -1,6 +1,5 @@
 #include "audiosteck.h"
 
-
 audiosteck::audiosteck(QWidget *parent)
 {
 }
@@ -51,7 +50,7 @@ void audiosteck::add(QString name)
 {
     mutex.lock();
     if (playlist.size()>=50) playlist.clear();
-    playlist << name;
+    playlist << (QDir::cleanPath(QDir::currentPath()+QDir::separator()+name));
     mutex.unlock();
 }
 

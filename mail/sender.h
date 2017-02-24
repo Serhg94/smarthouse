@@ -1,7 +1,7 @@
 #ifndef SENDER_H
 #define SENDER_H
 
-#include "mail/smtpmime"
+#include "mail/SmtpMime"
 #include "QThread"
 
 class MailSender : public QThread

@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <QDebug>
 #include <QtMsgHandler>
-
-#include <windows.h>
+#ifdef Q_OS_WIN
+	#include <windows.h>
+#endif
 
 //#include "mainwindow.h"
 //#include "alarmdialog.h"
