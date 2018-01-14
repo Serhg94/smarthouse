@@ -1,6 +1,6 @@
 #include "link.h"
 #include <QTime>
-
+#include "sql_worker.h"
 #include <QDebug>
 #include <QThread>
 
@@ -112,7 +112,7 @@ void Link::checkLink()
     }
     catch(...)
     {
-        qDebug()<<" Ошибка проверки условий";
+        qDebug()<<" Condition check error";
     }
 }
 

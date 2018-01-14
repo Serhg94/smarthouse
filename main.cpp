@@ -38,23 +38,9 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 int main(int argc, char *argv[])
 {
-    setlocale( LC_ALL,"Russian" );
     qInstallMessageHandler(myMessageOutput);
     QCoreApplication a(argc, argv);
-//    alarmDialog budil;
-//    QThread controlThread;
     controller control;
     control.init();
-//    control.moveToThread(&controlThread);
-//    QObject::connect(&controlThread, SIGNAL(started()), &control, SLOT(init()));
-//    controlThread.start();
-//    MainWindow view(&a);
-//    QObject::connect(&view, SIGNAL(alarmWindowOpen()), &budil, SLOT(show()));
-//    QObject::connect(&budil, SIGNAL(Alarm(int,QString)), &control, SLOT(bud_action(int,QString)));
-//    QObject::connect(&view, SIGNAL(openPort(QString)), &control, SLOT(openPort(QString)));
-//    QObject::connect(&control, SIGNAL(toLog(QString)), &view, SLOT(appendStr(QString)));
-//    QObject::connect(&control, SIGNAL(RefreshView(int,QString)), &view, SLOT(RefreshView(int,QString)));
-//    QObject::connect(&a, SIGNAL(aboutToQuit()), &controlThread, SLOT(quit()));
-//    view.show();
     return a.exec();
 }

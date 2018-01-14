@@ -39,18 +39,18 @@ int makeLinksFromDB(IOconnector *conn, Linktimer *lt)
                     if (conn->vars->value_generators[addr]->isConst())
                         conn->vars->changeValue(addr, conn->vars->value_generators[addr]->Calculate(err, conn));
                     if (err)
-                        qDebug() << "Ошибка вычисления математической формулы: " << query.value("object").toString();
+                        qDebug() << "Math expression exec error: " << query.value("object").toString();
                 }
                 else
-                    qDebug() << "Ошибка разбора математической формулы: " << query.value("object").toString();
+                    qDebug() << "Math expression parse error: " << query.value("object").toString();
             }
         }
-        qDebug()<<" Скрипты загружены";
+        qDebug()<<" Scripts loaded";
         return 1;
     }
     catch(...)
     {
-        qDebug()<<" Ошибка разбора файла скриптов";
+        qDebug()<<" Scripts load error";
 //        QMessageBox::critical(NULL,QObject::tr("Ошибка"),QObject::tr("Ошибка разбора файла скриптов!"));
     }
     return 0;

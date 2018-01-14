@@ -1,4 +1,6 @@
 #include "varcommand.h"
+#include "IOconnector.h"
+#include "rc_bus.h"
 
 varCommand::varCommand(QObject *parent) :
     Command(parent)

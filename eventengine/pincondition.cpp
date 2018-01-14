@@ -1,4 +1,6 @@
 #include "pincondition.h"
+#include <IOconnector.h>
+#include "rc_bus.h"
 
 pinCondition::pinCondition(QObject *parent) :
     Condition(parent)

@@ -1,7 +1,7 @@
 #ifndef ACTION_H
 #define ACTION_H
 
-#include <QObject>
+#include <QVector>
 #include <eventengine/command.h>
 
 class Action : public QObject

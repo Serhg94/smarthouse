@@ -2,7 +2,8 @@
 #define CONDITION_H
 
 #include <QObject>
-#include <IOconnector.h>
+
+class IOconnector;
 
 class Condition : public QObject
 {

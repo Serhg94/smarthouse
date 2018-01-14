@@ -1,16 +1,27 @@
 //#include <QMessageBox>
 #include <QTime>
+#include <QThread>
 #include "rc_bus.h"
+#include "binary.h"
+#include <QtSerialPort/QSerialPortInfo>
+#include "config.h"
+#include <QtCore/QDebug>
+
+const char end1 = B11111110;
+const char end2 = B11111101;
 
 rc_bus::rc_bus(bool n, QObject *parent) :
     QObject(parent)
 {
+    com_wait_answer_timeout = WAIT_ANSWER_TIMEOUT;
+    com_poll_delay = POLL_DELAY_MSEC;
     net = n;
     ip = QHostAddress::Broadcast;
     _debug = false;
-    for(int i=0; i<10; i++)
+    for(int i=0; i<10; i++){
         for(int j=0; j<10; j++)
             stat[i][j]=-1;
+    }
 }
 
 void rc_bus::init()
@@ -24,7 +35,7 @@ void rc_bus::init()
         send_timer = new QTimer(this);
         QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
         send_timer->start(SEND_DELAY_MSEC);
-        qDebug()<<" Соединение сконфигурировано через сеть";
+        qDebug()<<" Setting connection wia LAN";
         sendStr("clr");
     }
     else
@@ -33,35 +44,35 @@ void rc_bus::init()
         {
             preset();
             serial = new QSerialPort(this);
-            QObject::connect(serial, SIGNAL(readyRead()), this, SLOT(readAllData()));
-            QObject::connect(this, SIGNAL(gettedString(QString)), this, SLOT(parseDataStr(QString)));
-            //open_port("Arduino Mega 2560", NULL);
             send_timer = new QTimer(this);
             reconnect_timer = new QTimer(this);
+            poll_states_timer = new QTimer(this);
             QObject::connect(reconnect_timer, SIGNAL(timeout()), this, SLOT(reopen()));
-            QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
-            qDebug()<<" Соединение сконфигурировано через COM порт";
-            if (!open_port(NULL, portstr))
-                qDebug() << " Не могу открыть COM порт!";
-            send_timer->start(SEND_DELAY_MSEC);
+            QObject::connect(poll_states_timer, SIGNAL(timeout()), this, SLOT(requestStatus()));
+           // QObject::connect(send_timer, SIGNAL(timeout()), this, SLOT(send()));
+            qDebug()<<" Setting connection wia COM port";
+            if (!open_port(QString(), portstr))
+                qDebug() << " Cant open COM port!";
+           // send_timer->start(SEND_DELAY_MSEC);
+            poll_states_timer->start(com_poll_delay);
+            curr_poll_num = 1;
             reconnect_timer->start(COM_REOPEN_DELAY_MSEC);
         }
         catch(...)
         {
-            qDebug() << " Не могу открыть COM порт!";
+            qDebug() << " Cant open COM port!";
 //            QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка инициализации шины"));
         }
     }
 }
-
 
 void rc_bus::reopen()
 {
     if (!serial->isOpen())
     {
         serial->close();
-        if (!open_port(NULL, portstr))
-            qDebug() << " Не могу открыть COM порт!";
+        if (!open_port(QString(), portstr))
+            qDebug() << " Cant open COM port!";
     }
 }
 
@@ -69,7 +80,9 @@ void rc_bus::initCheck()
 {
     for(int j=0; j<10; j++)
         stat[j][3]=-1;
-    sendStr("clr");
+    if (net)
+        sendStr("clr");
+    emit sendedString("Refrash states");
     QTimer::singleShot(1000, this, SLOT(endCheck()));
 }
 
@@ -88,7 +101,6 @@ void rc_bus::endCheck()
         }
 }
 
-
 bool rc_bus::open_port(QString desport, QString nameport)
 {
     if (!net)
@@ -96,47 +108,32 @@ bool rc_bus::open_port(QString desport, QString nameport)
         serial->close();
         //while(!serial->isOpen())
         {
-            if (desport!=NULL)
+            if (!desport.isEmpty())
             foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
                 if ((info.description()==desport)) {
                    serial->setPort(info);
                 }
             }
-            if (nameport!=NULL) serial->setPortName(nameport);
+            if (!nameport.isEmpty()) serial->setPortName(nameport);
             //qDebug() << nameport;
             if (serial->open(QIODevice::ReadWrite)){
                 QSerialPortInfo info(serial->portName());
                 if (!serial->setBaudRate(115200)) {
-                    qDebug() << "Set baud rate " <<  250000 << " error.";
-
+                    qDebug() << "Set baud rate " <<  115200 << " error.";
                 };
-
                 if (!serial->setDataBits(QSerialPort::Data8)) {
                     qDebug() << "Set data bits " <<  QSerialPort::Data8 << " error.";
-
                 }
-
                 if (!serial->setParity(QSerialPort::NoParity)) {
                     qDebug() << "Set parity " <<  QSerialPort::NoParity << " error.";
-
                 }
-
                 if (!serial->setStopBits(QSerialPort::OneStop)) {
                     qDebug() << "Set stop bits " <<  QSerialPort::OneStop << " error.";
-
                 }
-
                 if (!serial->setFlowControl(QSerialPort::NoFlowControl)) {
                     qDebug() << "Set flow " <<  QSerialPort::NoFlowControl << " error.";
-
                 }
-                //qDebug() << "Name        : " << info.portName();
-                //qDebug() << "Description : " << info.description();
-                //qDebug() << "Manufacturer: " << info.manufacturer();
-                qDebug()<<" Порт открыт";
-                QString a("clr");
-                a[a.length()]='\n';
-                serial->write(a.toLatin1());
+                qDebug()<<" Port opened";
             }
            if (!serial->isOpen())
            {
@@ -154,7 +151,6 @@ bool rc_bus::open_port(QString desport, QString nameport)
     return false;
 }
 
-
 void rc_bus::preset()
 {
     read_mutex.lock();
@@ -167,7 +163,6 @@ void rc_bus::preset()
     read_mutex.unlock();
 }
 
-
 void rc_bus::sendCommand(int sn, QString string)
 {
     QString s = QString("0%1set%2") .arg(sn) .arg(string);
@@ -178,16 +173,38 @@ void rc_bus::sendCommand(int sn, QString string)
     //serial->write(s.toLatin1());
 }
 
-
 void rc_bus::sendStr(QString string)
 {
     send_mutex.lock();
     send_buff.append(string);
     send_mutex.unlock();
-    //string[string.length()] = '\n';
-    //serial->write(string.toLatin1());
-    //qDebug()<<string.toLatin1();
-    //emit sendedString(string);
+}
+
+QChar invers(QChar c){
+    if (c=='1')
+    return '0';
+    return '1';
+}
+
+//1 - выполнено, 0- не выполнено
+int rc_bus::checkSet(int sn, QString sen){
+    if (((sen[0]=='2')||(sen[0]==sets[sn][0]))&&
+    ((sen[1]=='2')||(sen[1]==sets[sn][1]))&&
+    ((sen[2]=='2')||(sen[2]==sets[sn][2]))&&
+    ((sen[3]=='2')||(sen[3]==sets[sn][3]))&&
+    ((sen[4]=='2')||(sen[4]==sets[sn][4]))&&
+    ((sen[5]=='2')||(sen[5]==sets[sn][5]))&&
+    ((sen[6]=='2')||(sen[6]==sets[sn][6]))&&
+    ((sen[7]=='2')||(sen[7]==sets[sn][7]))&&
+    ((sen[8]=='2')||(sen[8]==sets[sn][8]))&&
+    ((sen[9]=='2')||(sen[9]==sets[sn][9]))&&
+    ((sen[10]=='2')||(sen[10]==sets[sn][10]))&&
+    ((sen[11]=='2')||(sen[11]==sets[sn][11]))&&
+    ((sen[12]=='2')||(sen[12]==sets[sn][12]))&&
+    ((sen[13]=='2')||(sen[13]==sets[sn][13]))&&
+    ((sen[14]=='2')||(sen[14]==sets[sn][14])))
+        return 0;
+    return 1;
 }
 
 void rc_bus::send()
@@ -205,16 +222,72 @@ void rc_bus::send()
                 send_mutex.unlock();
                 return;
             }
-            QString string = send_buff.first();
-            string[string.length()] = '\n';
+            QString inputString = send_buff.first();
             send_buff.pop_front();
             send_mutex.unlock();
-            serial->write(string.toLatin1());
-            emit sendedString("SENDED: "+string);
+            int num = inputString.mid(0,2).toInt();
+            if ((num<1)||(num>10)){
+                qDebug() << " Wrong controller number in command";
+                return;
+            }
+            bool check = true;
+            QString sen = inputString.mid(5,inputString.length());
+            sen.replace('\n', '2');
+            while(sen.length()<15) sen+='2';
+            for(int i=0; i<sen.length(); i++){
+                if ((sen[i]!='1')&&(sen[i]!='0')&&(sen[i]!='2')&&(sen[i]!='3'))
+                    check = false;
+                if (sen[i]=='3')
+                    sen[i]=invers(sets[num][i]);
+            }
+            if (!check){
+                qDebug() << " Wrong command data";
+                return;
+            }
+            if ((checkSet(num, sen)==1)&&(stat[num][3]!=-1)){
+                QByteArray buf;
+                buf.append((char)B00000000).append((char)B00000000).append((char)B00000000)
+                        .append((char)B00000000).append((char)end1).append((char)end2);
+                buf[0] = num;
+                if ((sen[0] == '2')&&(sets[num][0]=='1')) buf[1] = buf[1]|B10000000;
+                if ((sen[1] == '2')&&(sets[num][1]=='1')) buf[1] = buf[1]|B01000000;
+                if ((sen[2] == '2')&&(sets[num][2]=='1')) buf[1] = buf[1]|B00100000;
+                if ((sen[3] == '2')&&(sets[num][3]=='1')) buf[1] = buf[1]|B00010000;
+                if ((sen[4] == '2')&&(sets[num][4]=='1')) buf[1] = buf[1]|B00001000;
+                if ((sen[5] == '2')&&(sets[num][5]=='1')) buf[1] = buf[1]|B00000100;
+                if ((sen[6] == '2')&&(sets[num][6]=='1')) buf[1] = buf[1]|B00000010;
+                if ((sen[7] == '2')&&(sets[num][7]=='1')) buf[1] = buf[1]|B00000001;
+                if ((sen[8] == '2')&&(sets[num][8]=='1')) buf[2] = buf[2]|B01000000;
+                if ((sen[9] == '2')&&(sets[num][9]=='1')) buf[2] = buf[2]|B00100000;
+                if ((sen[10] == '2')&&(sets[num][10]=='1')) buf[2] = buf[2]|B00010000;
+                if ((sen[11] == '2')&&(sets[num][11]=='1')) buf[2] = buf[2]|B00001000;
+                if ((sen[12] == '2')&&(sets[num][12]=='1')) buf[2] = buf[2]|B00000100;
+                if ((sen[13] == '2')&&(sets[num][13]=='1')) buf[2] = buf[2]|B00000010;
+                if ((sen[14] == '2')&&(sets[num][14]=='1')) buf[2] = buf[2]|B00000001;
+                if ((sen[0] == '1')) buf[1] = buf[1]|B10000000;
+                if ((sen[1] == '1')) buf[1] = buf[1]|B01000000;
+                if ((sen[2] == '1')) buf[1] = buf[1]|B00100000;
+                if ((sen[3] == '1')) buf[1] = buf[1]|B00010000;
+                if ((sen[4] == '1')) buf[1] = buf[1]|B00001000;
+                if ((sen[5] == '1')) buf[1] = buf[1]|B00000100;
+                if ((sen[6] == '1')) buf[1] = buf[1]|B00000010;
+                if ((sen[7] == '1')) buf[1] = buf[1]|B00000001;
+                if ((sen[8] == '1')) buf[2] = buf[2]|B01000000;
+                if ((sen[9] == '1')) buf[2] = buf[2]|B00100000;
+                if ((sen[10] == '1')) buf[2] = buf[2]|B00010000;
+                if ((sen[11] == '1')) buf[2] = buf[2]|B00001000;
+                if ((sen[12] == '1')) buf[2] = buf[2]|B00000100;
+                if ((sen[13] == '1')) buf[2] = buf[2]|B00000010;
+                if ((sen[14] == '1')) buf[2] = buf[2]|B00000001;
+                buf[3] = 0-(buf[0]+buf[1]+buf[2]);
+                serial->write(buf);
+                serial->waitForBytesWritten();
+                emit sendedString("SENDED: "+inputString);
+            }
         }
         catch(...)
         {
-            qDebug()<<" Ошибка отправки команды в шину";
+            qDebug()<<" Error while sending command to bus";
             //QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка отправки команды в шину"));
         }
     }
@@ -237,28 +310,97 @@ void rc_bus::send()
     }
 }
 
-
-void rc_bus::changeState(int num_ctr, int num_set)
+void rc_bus::requestStatus()
 {
-    QString a("222222222222222");
-    read_mutex.lock();
-    if (sets[num_ctr].at(num_set)=='1')
-        a[num_set]='0';
-    else
-        a[num_set]='1';
-    read_mutex.unlock();
-    sendCommand(num_ctr, a);
+    if (!this->serial->isOpen()){
+        QThread::msleep(5);
+        return;
+    }
+    QByteArray buf;
+    buf[0]= curr_poll_num;
+    buf[1]= curr_poll_num;
+    buf[2]= curr_poll_num;
+    buf[3]= curr_poll_num;
+    buf[4]= end1;
+    buf[5]= end2;
+    this->serial->write(buf);
+    this->serial->waitForBytesWritten();
+    buf.clear();
+    while (this->serial->waitForReadyRead(com_wait_answer_timeout))
+        buf += this->serial->readAll();
+    if (buf.size() == 12 &&(buf[buf.size()-2]==end1)&&(buf[buf.size()-1]==end2))
+    {
+        if (buf[0]==(char)curr_poll_num)
+        if ((uint8_t)(0-(buf[0]+buf[1]+buf[2]+buf[3]+buf[4]+buf[5]+buf[6]+buf[7]+buf[8])) == (uint8_t)buf[9])
+        {
+            bool changed = false;
+            QString str = "";
+            if (buf[1]&B10000000) str += '1'; else str += '0';
+            if (buf[1]&B01000000) str += '1'; else str += '0';
+            if (buf[1]&B00100000) str += '1'; else str += '0';
+            if (buf[1]&B00010000) str += '1'; else str += '0';
+            if (buf[1]&B00001000) str += '1'; else str += '0';
+            if (buf[1]&B00000100) str += '1'; else str += '0';
+            if (buf[1]&B00000010) str += '1'; else str += '0';
+            if (buf[1]&B00000001) str += '1'; else str += '0';
+            if (buf[2]&B01000000) str += '1'; else str += '0';
+            if (buf[2]&B00100000) str += '1'; else str += '0';
+            if (buf[2]&B00010000) str += '1'; else str += '0';
+            if (buf[2]&B00001000) str += '1'; else str += '0';
+            if (buf[2]&B00000100) str += '1'; else str += '0';
+            if (buf[2]&B00000010) str += '1'; else str += '0';
+            if (buf[2]&B00000001) str += '1'; else str += '0';
+            if (sets[curr_poll_num] != str) changed = true;
+            sets[curr_poll_num] = str;
+            stat[curr_poll_num][0] = 0;
+            stat[curr_poll_num][0] += (unsigned char)buf[3] << 8;
+            stat[curr_poll_num][0] += (unsigned char)buf[4];
+            str = "";
+            if (buf[5]&B10000000) str += '1'; else str += '0';
+            if (buf[5]&B01000000) str += '1'; else str += '0';
+            if (buf[5]&B00100000) str += '1'; else str += '0';
+            if (buf[5]&B00010000) str += '1'; else str += '0';
+            if (rebs[curr_poll_num] != str) changed = true;
+            rebs[curr_poll_num] = str;
+            stat[curr_poll_num][1] = (unsigned char)buf[6];
+            stat[curr_poll_num][2] = (unsigned char)buf[7];
+            str = "";
+            if (buf[8]&B10000000) str += '1'; else str += '0';
+            if (buf[8]&B01000000) str += '1'; else str += '0';
+            if (buf[8]&B00100000) str += '1'; else str += '0';
+            if (buf[8]&B00010000) str += '1'; else str += '0';
+            if (butt[curr_poll_num] != str) changed = true;
+            butt[curr_poll_num] = str;
+            if (stat[curr_poll_num][3]!=1) changed = true;
+            stat[curr_poll_num][3]=1;
+            if (changed)
+            {
+                str = QString::number(curr_poll_num)+'/'+sets[curr_poll_num]+'/'+stat[curr_poll_num][0]+'/'+rebs[curr_poll_num]
+                        +'/'+stat[curr_poll_num][1]+'/'+stat[curr_poll_num][2]+'/'+butt[curr_poll_num]+'/';
+                emit gettedString(str);
+                emit statsChanged(curr_poll_num);
+                emit statsChangedCheck(QString("bus%1").arg(curr_poll_num));
+            }
+        }
+    }
+    else{
+        stat[curr_poll_num][3]=-1;
+        qDebug() << " No answer from conntroller number " << curr_poll_num;
+    }
+    curr_poll_num++;
+    if (curr_poll_num > CONTROLLERS_COUNT)
+        curr_poll_num = 1;
+    send();
 }
-
 
 int rc_bus::checkString(QString string, int from)
 {
+    Q_UNUSED(from)
     bool ok;
     int sn=string.toInt(&ok);
     if ((sn<=0)||(ok==false)) return 0;
     return sn;
 }
-
 
 void rc_bus::parseDataStr(QString string)
 {
@@ -348,45 +490,10 @@ void rc_bus::parseDataStr(QString string)
     }
     catch(...)
     {
-        qDebug()<<"Ошибка разбора входящей строки";
+        qDebug()<<" Error while parse incoming data";
         //QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка отправки команды в шину"));
     }
 }
-
-
-void rc_bus::readAllData()
-{
-    try
-    {
-        QString res = "";
-        QString a = "";
-        a.append(this->serial->readAll());
-        //qDebug() << a;
-       // QTime cur = QTime::currentTime();
-        // qDebug() << cur << a;
-        if ( (a.at(a.length()-1))=='\n' )
-            if (buffer != NULL){
-                res = *buffer+a;
-                buffer->~QString();
-                buffer = NULL;
-            }
-            else{
-                res = a;
-            }
-        else{
-            if (buffer!=NULL) qDebug() << "!";
-            buffer = new QString(a);
-            return;
-        }
-        emit gettedString(res);
-    }
-    catch(...)
-    {
-        qDebug()<<" Ошибка чтения данных с шины";
-        //QMessageBox::critical(NULL,QObject::tr("Ошибка"),tr("Ошибка чтения данных с шины"));
-    }
-}
-
 
 void rc_bus::processPendingDatagrams()
 {
@@ -396,12 +503,10 @@ void rc_bus::processPendingDatagrams()
         QHostAddress new_ip;
         udpSocket->readDatagram(datagram.data(), datagram.size(), &new_ip);
         if (datagram.length()<3) return;
-        //qDebug() << ip.toString();
-        //qDebug() << new_ip.toString();
         if (ip==QHostAddress::Broadcast)
         {
             ip = new_ip;
-            qDebug()<< " Головной контроллер ответил с адреса " << ip.toString();
+            qDebug()<< " Main controller answered from address: " << ip.toString();
         }
         else if ((ip.toIPv4Address()!=new_ip.toIPv4Address())&&(ip!=new_ip))
             return;
@@ -409,7 +514,6 @@ void rc_bus::processPendingDatagrams()
         emit gettedString(data);
     }
 }
-
 
 rc_bus::~rc_bus()
 {

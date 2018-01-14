@@ -1,6 +1,6 @@
 #include "audiosteck.h"
 
-audiosteck::audiosteck(QWidget *parent)
+audiosteck::audiosteck(QObject *parent) : QObject(parent)
 {
 }
 

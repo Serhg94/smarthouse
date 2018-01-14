@@ -1,4 +1,5 @@
 #include "command.h"
+#include <QDebug>
 
 Command::Command(QObject *parent) :
     QObject(parent)

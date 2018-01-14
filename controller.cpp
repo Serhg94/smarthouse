@@ -2,6 +2,8 @@
 //#include <QStringListModel>
 #include "linkmaker.h"
 #include "linkmakerdb.h"
+#include "config.h"
+#include "sql_worker.h"
 
 
 controller::controller(QObject *parent) :
@@ -14,7 +16,6 @@ void controller::init()
     io_connector = new IOconnector(this);
 
     QObject::connect(io_connector->udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
-    //QObject::connect(io_connector->bus, SIGNAL(gettedString(QString)), this, SLOT(appendStr(QString)));
     QObject::connect(io_connector->bus, SIGNAL(sendedString(QString)), this, SLOT(appendStr(QString)));
     QObject::connect(io_connector->bus, SIGNAL(gettedString(QString)), this, SLOT(sendDatagram(QString)));
     QObject::connect(io_connector->bus, SIGNAL(statsChanged(int)), this, SLOT(sendToView(int)));
@@ -37,12 +38,12 @@ void controller::init()
     if (this->many_thread==1)
     {
         linkengine->startInManyThreads();
-        qDebug() << " Движок линков запущен в многопоточном режиме";
+        qDebug() << " Link engine started in multi thread mode";
     }
     else
     {
         linkengine->startInOneThread();
-        qDebug() << " Движок линков запущен в однопоточном режиме";
+        qDebug() << " Link engine started in single thread mode";
     }
 
     up_timer = new QTimer(this);
@@ -62,7 +63,7 @@ void controller::readConfig(QString name, bool &links_from_db, bool &use_com, QS
     {
         QFile file(name);
         if (!file.open(QIODevice::ReadOnly)) { // Проверяем, возможно ли открыть наш файл для чтения
-            qDebug()<<" Не могу найти файл настроек";
+            qDebug()<<" Cant open config.ini";
             return; // если это сделать невозможно, то завершаем функцию
         }
         char buf[2048];
@@ -117,6 +118,12 @@ void controller::readConfig(QString name, bool &links_from_db, bool &use_com, QS
                     if (list[0].contains("db_port")){
                         io_connector->sql_db->port = list[1].toInt();
                     }
+                    if (list[0].contains("com_wait_answer_timeout")){
+                        io_connector->bus->com_wait_answer_timeout = list[1].toInt();
+                    }
+                    if (list[0].contains("com_poll_delay")){
+                        io_connector->bus->com_poll_delay = list[1].toInt();
+                    }
                     if (list[0].contains("db_name")){
                         io_connector->sql_db->db_name = list[1].simplified();
                     }
@@ -138,10 +145,10 @@ void controller::readConfig(QString name, bool &links_from_db, bool &use_com, QS
                             if (io_connector->vars->value_generators[num]->isConst())
                                 io_connector->vars->changeValue(num, io_connector->vars->value_generators[num]->Calculate(err, io_connector));
                             if (err)
-                                qDebug() << "Ошибка вычисления математической формулы: " << list[1].simplified();
+                                qDebug() << "Math expression exec error: " << list[1].simplified();
                         }
                         else
-                            qDebug() << "Ошибка разбора математической формулы: " << list[1].simplified();
+                            qDebug() << "Math expression parse error: " << list[1].simplified();
                         //io_connector->vars->changeValue(num, list[1].toDouble());
                     }
                 }
@@ -149,12 +156,12 @@ void controller::readConfig(QString name, bool &links_from_db, bool &use_com, QS
             }
             lineLength = file.readLine(buf, sizeof(buf));
         }
-        qDebug()<<" Настройки загружены";
+        qDebug()<<" config loaded";
         return;
     }
     catch(...)
     {
-        qDebug()<<" Ошибка разбора файла настроек";
+        qDebug()<<" Config file parse error";
         //QMessageBox::critical(NULL,QObject::tr("Ошибка"),QObject::tr("Ошибка разбора файла скриптов!"));
     }
 }
@@ -169,7 +176,7 @@ void controller::_debugInfo(QString msg)
 
 void controller::openPort(QString s)
 {
-    io_connector->bus->open_port(NULL, s);
+    io_connector->bus->open_port(QString(), s);
 }
 
 
@@ -190,7 +197,7 @@ void controller::update()
         if (err == false)
             io_connector->vars->changeValue(i, val);
         else
-            qDebug() << "Ошибка вычисления математической формулы: " << io_connector->vars->value_generators.at(i)->primal_str;
+            qDebug() << "Math expression exec error: " << io_connector->vars->value_generators.at(i)->primal_str;
     }
     io_connector->bus->initCheck();
 }

@@ -1,4 +1,6 @@
 #include "sqlcommand.h"
+#include <IOconnector.h>
+#include "sql_worker.h"
 
 sqlCommand::sqlCommand(QObject *parent) :
     Command(parent)

@@ -4,13 +4,13 @@
 #include <QObject>
 #include <QtCore/QDebug>
 #include <QUdpSocket>
-#include "rc_bus.h"
-#include "audiosteck.h"
-#include "sql_worker.h"
-#include "web_termometr.h"
 #include <variables/variables.h>
-#include "config.h"
+#include <QThread>
 
+class rc_bus;
+class audiosteck;
+class sql_worker;
+class web_termometr;
 
 class IOconnector : public QObject
 {

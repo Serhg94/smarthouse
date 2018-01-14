@@ -6,7 +6,7 @@
 #include <QJsonObject>
 #include <QNetworkRequest>
 
-web_termometr::web_termometr(QObject *parent)
+web_termometr::web_termometr(QObject *parent) : QObject(parent)
 {
     _debug = false;
 }

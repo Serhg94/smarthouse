@@ -1,4 +1,6 @@
 #include "analogcondition.h"
+#include <IOconnector.h>
+#include "rc_bus.h"
 
 analogCondition::analogCondition(QObject *parent) :
     Condition(parent)

@@ -5,15 +5,12 @@
 #include <QtCore/QDebug>
 #include <QUdpSocket>
 #include <QSettings>
-#include <QtSerialPort/QSerialPort>
-#include <QtSerialPort/QSerialPortInfo>
 #include "rc_bus.h"
 #include "audiosteck.h"
 #include "web_termometr.h"
 #include "mail/sender.h"
 #include <eventengine/eventengine.h>
 #include <QTimer>
-#include "config.h"
 #include "IOconnector.h"
 
 class controller : public QObject
@@ -31,7 +28,6 @@ public:
 
 
     explicit controller(QObject *parent = 0);
-    bool exist_online();
     void initPortBox();
     void readConfig(QString name, bool &links_from_db, bool &use_com, QString &com_name, QString &server_ip);
     ~controller();

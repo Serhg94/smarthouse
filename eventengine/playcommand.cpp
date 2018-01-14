@@ -1,4 +1,6 @@
 #include "playcommand.h"
+#include <IOconnector.h>
+#include "rc_bus.h"
 
 playCommand::playCommand(QObject *parent) :
     Command(parent)

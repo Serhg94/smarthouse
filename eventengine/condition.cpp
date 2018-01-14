@@ -1,4 +1,5 @@
 #include "condition.h"
+#include <QDebug>
 
 Condition::Condition(QObject *parent) :
     QObject(parent)

@@ -1,4 +1,6 @@
 #include "mailcommand.h"
+#include <IOconnector.h>
+#include "rc_bus.h"
 
 mailCommand::mailCommand(QObject *parent) :
     Command(parent)

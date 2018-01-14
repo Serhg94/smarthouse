@@ -11,7 +11,7 @@ class audiosteck : public QObject
 {
     Q_OBJECT
 public:
-    explicit audiosteck(QWidget *parent = 0);
+    explicit audiosteck(QObject *parent = 0);
 
 private:
     QTimer *maint;

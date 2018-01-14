@@ -1,4 +1,6 @@
 #include "buscommand.h"
+#include <IOconnector.h>
+#include "rc_bus.h"
 
 busCommand::busCommand(QObject *parent) :
     Command(parent)

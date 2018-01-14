@@ -1,4 +1,6 @@
 #include "saycommand.h"
+#include <IOconnector.h>
+#include "rc_bus.h"
 
 sayCommand::sayCommand(QObject *parent) :
     Command(parent)

@@ -4,8 +4,8 @@
 #include <QObject>
 #include <QThread>
 #include <eventengine/link.h>
-#include "IOconnector.h"
 
+class IOconnector;
 
 class Linktimer : public QObject
 {

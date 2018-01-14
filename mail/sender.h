@@ -42,7 +42,7 @@ public:
         }
         catch(...)
         {
-            qDebug()<<" Ошибка отправки e-mail";
+            qDebug()<<" Error while send e-mail";
         }
     }
 

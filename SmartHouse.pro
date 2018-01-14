@@ -7,7 +7,6 @@
 QT       += core serialport network multimedia sql
 
 QT       -= gui
-#greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = SmartHouse
 TEMPLATE = app
@@ -102,10 +101,8 @@ HEADERS  += \
     linkmakerdb.h \
     eventengine/sqlcommand.h \
     variables/mathexpression.h \
-    variables/token.h
-
-#FORMS    += mainwindow.ui \
-#    alarmdialog.ui
+    variables/token.h \
+    binary.h
 
 RESOURCES +=
 DEFINES += QT_MESSAGELOGCONTEXT

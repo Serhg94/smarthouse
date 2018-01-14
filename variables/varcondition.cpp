@@ -1,4 +1,5 @@
 #include "varcondition.h"
+#include "IOconnector.h"
 
 varCondition::varCondition(QObject *parent) :
     Condition(parent)

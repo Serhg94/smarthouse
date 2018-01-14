@@ -22,12 +22,12 @@ int makeLinksFromFile(QString name, IOconnector *conn, Linktimer *lt)
             }
             lineLength = file.readLine(buf, sizeof(buf));
         }
-        qDebug()<<" Скрипты загружены";
+        qDebug()<<" Scripts loaded";
         return 1;
     }
     catch(...)
     {
-        qDebug()<<" Ошибка разбора файла скриптов";
+        qDebug()<<" Scripts load error";
 //        QMessageBox::critical(NULL,QObject::tr("Ошибка"),QObject::tr("Ошибка разбора файла скриптов!"));
     }
     return 0;

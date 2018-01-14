@@ -1,6 +1,7 @@
 #include "mathexpression.h"
 #include <math.h>
 #include <IOconnector.h>
+#include "rc_bus.h"
 
 MathExpression::MathExpression()
 {

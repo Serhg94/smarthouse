@@ -1,3 +1,8 @@
+#include "rc_bus.h"
+#include "audiosteck.h"
+#include "sql_worker.h"
+#include "web_termometr.h"
+#include "config.h"
 #include "IOconnector.h"
 
 IOconnector::IOconnector(QObject *parent) :
@@ -19,9 +24,7 @@ IOconnector::IOconnector(QObject *parent) :
     audio_thread.start();
 
     bus = new rc_bus();
-    //QObject::connect(&bus_thread, SIGNAL(started()), bus, SLOT(init()));
     bus->moveToThread(&bus_thread);
-    //bus_thread.start();
 
     sql_db = new sql_worker();
     QObject::connect(&sql_thread, SIGNAL(started()), sql_db, SLOT(init()));

@@ -1,4 +1,6 @@
 #include "linktimer.h"
+#include "IOconnector.h"
+#include "rc_bus.h"
 
 Linktimer::Linktimer(IOconnector * io, QObject *parent) :
     QObject(parent)

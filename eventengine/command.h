@@ -2,7 +2,8 @@
 #define COMMAND_H
 
 #include <QObject>
-#include <IOconnector.h>
+
+class IOconnector;
 
 class Command : public QObject
 {
